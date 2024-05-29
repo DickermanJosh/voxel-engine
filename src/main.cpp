@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "ShaderProgram.hpp"
-#include "Mesh.hpp"
+#include "Block.hpp"
 
 int main() {
   sf::ContextSettings settings;
@@ -38,7 +38,9 @@ int main() {
         1, 2, 3    // second triangle
     };
 
-    Mesh mesh(vertices, indices);
+    // Mesh mesh(vertices, indices);
+    glm::vec3 blockPos(0.0f, 0.0f, 0.0f);
+    Block block(blockPos);
 
     glm::mat4 transform = glm::mat4(1.0f);
     glm::vec4 color(0.2f, 1.0f, 0.0f, 1.0f);
@@ -51,7 +53,7 @@ int main() {
         shaderProgram.setUniform("transform", transform);
         shaderProgram.setUniform("color", color);
         
-        mesh.draw();
+        block.draw();
         
         window.display();
     }
