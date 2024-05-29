@@ -1,4 +1,5 @@
 #include "EventHandler.hpp"
+#include <GL/gl.h>
 
 void EventHandler::addEventListener(EventListener* listener) {
     listeners.push_back(listener);
@@ -21,8 +22,10 @@ void EventHandler::processEvents(sf::Window& window) {
                     sf::Vector2u windowSize = window.getSize();
                     sf::Vector2i center(windowSize.x / 2, windowSize.y / 2);
                     listener->onMouseMove(center.x, center.y, event.mouseMove.x, event.mouseMove.y);
-                    // TODO: try centering here instead of inside game loop
                 }
+                break;
+            case sf::Event::Resized:
+                glViewport(0, 0, event.size.width, event.size.height);
                 break;
             case sf::Event::Closed:
                 window.close();
