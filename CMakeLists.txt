@@ -24,7 +24,7 @@ include_directories(${CMAKE_SOURCE_DIR}/headers)
 include_directories(${CMAKE_INCLUDE_DIRS})
 
 # Add the executable
-file(GLOB SOURCES "src/*.cpp")
+file(GLOB SOURCES "src/*.cpp", "src/utils/*.cpp")
 add_executable(minecraft ${SOURCES})
 
 # Link SFML and OpenGL libraries
