@@ -3,6 +3,7 @@
 
 #include <string>
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 
 class ShaderProgram {
 public:
@@ -10,6 +11,8 @@ public:
     ShaderProgram(const std::string& vertexPath, const std::string& fragmentPath);
     ~ShaderProgram();
     void use();
+    void setUniform(const std::string& name, const glm::mat4& matrix);
+    void setUniform(const std::string& name, const glm::vec4& value);
     GLuint getProgram() const;
 
 private:

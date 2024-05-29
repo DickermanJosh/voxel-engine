@@ -67,3 +67,23 @@ std::string ShaderProgram::readFile(const std::string& filePath) {
     buffer << file.rdbuf();
     return buffer.str();
 }
+
+void ShaderProgram::setUniform(const std::string& name, const glm::mat4& matrix) {
+    GLint location = glGetUniformLocation(program, name.c_str());
+    if (location == -1) {
+        std::cerr << "Warning: uniform '" << name << "' doesn't exist!" << std::endl;
+        return;
+    }
+
+    glUniformMatrix4fv(location, 1, GL_FALSE, &matrix[0][0]);
+}
+
+void ShaderProgram::setUniform(const std::string& name, const glm::vec4& value) {
+    GLint location = glGetUniformLocation(program, name.c_str());
+    if (location == -1) {
+        std::cerr << "Warning: uniform '" << name << "' doesn't exist!" << std::endl;
+        return;
+    }
+
+    glUniform4fv(location, 1, &value[0]);
+}
