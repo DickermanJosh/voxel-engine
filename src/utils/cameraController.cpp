@@ -1,4 +1,3 @@
-#include <iostream>
 #include "CameraController.hpp"
 
 CameraController::CameraController(Camera& camera)
