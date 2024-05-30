@@ -42,86 +42,6 @@ int main() {
 
     ShaderProgram shaderProgram("../res/shaders/vertex.glsl", "../res/shaders/fragment.glsl");
 
-    // Floor vertices and indices
-    std::vector<float> floorVertices = {
-        // positions
-        -1.0f,  0.0f, -1.0f,
-        -1.0f,  0.0f,  1.0f,
-        1.0f,  0.0f,  1.0f,
-        1.0f,  0.0f, -1.0f
-    };
-    std::vector<unsigned int> floorIndices = {
-        0, 1, 2, 2, 3, 0
-    };
-
-    // Ceiling vertices and indices
-    std::vector<float> ceilingVertices = {
-        // positions
-        -1.0f,  1.0f, -1.0f,
-        1.0f,  1.0f, -1.0f,
-        1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f
-    };
-    std::vector<unsigned int> ceilingIndices = {
-        0, 1, 2, 2, 3, 0
-    };
-
-    // Wall vertices and indices (Negative Z)
-    std::vector<float> negWallZVertices = {
-        // positions
-        -1.0f,  0.0f, -1.0f, // bottom-left
-        1.0f,  0.0f, -1.0f, // bottom-right
-        1.0f,  1.0f, -1.0f, // top-right
-        -1.0f,  1.0f, -1.0f // top-left
-    };
-    std::vector<unsigned int> negWallZIndices = {
-        0, 1, 2, 2, 3, 0
-    };
-
-    // Wall vertices and indices (Positive Z)
-    std::vector<float> posWallZVertices = {
-        // positions
-        -1.0f,  0.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-        1.0f,  1.0f,  1.0f,
-        1.0f,  0.0f,  1.0f,
-    };
-    std::vector<unsigned int> posWallZIndices = {
-        0, 1, 2, 2, 3, 0
-    };
-
-    // Wall vertices and indices (Negative X)
-    std::vector<float> negWallXVertices = {
-        // positions
-        -1.0f,  0.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f,  0.0f,  1.0f,
-    };
-    std::vector<unsigned int> negWallXIndices = {
-        0, 1, 2, 2, 3, 0
-    };
-
-    // Wall vertices and indices (Positive X)
-    std::vector<float> posWallXVertices = {
-        // positions
-        1.0f,  0.0f, -1.0f,
-        1.0f,  0.0f,  1.0f,
-        1.0f,  1.0f,  1.0f,
-        1.0f,  1.0f, -1.0f,
-    };
-    std::vector<unsigned int> posWallXIndices = {
-        0, 1, 2, 2, 3, 0
-    };
-
-    Mesh floor(floorVertices, floorIndices);
-    Mesh ceiling(ceilingVertices, ceilingIndices);
-    Mesh posWallZ(posWallZVertices, posWallZIndices);
-    Mesh negWallZ(negWallZVertices, negWallZIndices);
-    Mesh posWallX(posWallXVertices, posWallXIndices);
-    Mesh negWallX(negWallXVertices, negWallXIndices);
-    // Block block(glm::vec3(0.0f, 2.0f, 15.0f));
-
     // Camera Setup
     glm::vec3 cameraPos = glm::vec3(0.0f, 1.0f, 3.0f);
     glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -135,6 +55,9 @@ int main() {
     // Clock for keeping track of deltatime. TODO: Cap at 144fps
     sf::Clock clock;
     float lastFrame = 0.0f;
+
+    std::vector<bool> visibleFaces = {true, true, true, true, true, true};
+    Block block(glm::vec3(0.0f, 0.0f, 0.0f), visibleFaces);
 
     while (window.isOpen()) {
         float currentFrame = clock.getElapsedTime().asSeconds();
@@ -158,57 +81,13 @@ int main() {
         glm::mat4 projection = camera.getProjectionMatrix(aspectRatio);
         glm::mat4 view = camera.getViewMatrix();
 
-        // Render the floor
-        glm::mat4 floorTransform = glm::mat4(1.0f);
+        glm::mat4 blockTransform = glm::mat4(1.0f);
         shaderProgram.setUniform("projection", projection);
         shaderProgram.setUniform("view", view);
-        shaderProgram.setUniform("transform", floorTransform);
-        // Floor - Red
+        shaderProgram.setUniform("transform", blockTransform);
         shaderProgram.setUniform("color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-        floor.draw();
+        block.draw();
 
-        // Render the ceiling
-        glm::mat4 ceilingTransform = glm::mat4(1.0f);
-        shaderProgram.setUniform("transform", ceilingTransform);
-        // Ceiling - White
-        shaderProgram.setUniform("color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-        ceiling.draw();
-
-        // Render the wall in the positive Z direction
-        glm::mat4 posWallZTransform = glm::mat4(1.0f);
-        shaderProgram.setUniform("transform", posWallZTransform);
-        // Positive Z - Yellow
-        shaderProgram.setUniform("color", glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
-        posWallZ.draw();
-
-        // Render the wall in the negative Z direction
-        glm::mat4 wallZTransform = glm::mat4(1.0f);
-        shaderProgram.setUniform("transform", wallZTransform);
-        // Negative Z - Green
-        shaderProgram.setUniform("color", glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-        negWallZ.draw();
-
-        // Render the wall in the positive X direction
-        glm::mat4 posWallXTransform = glm::mat4(1.0f);
-        shaderProgram.setUniform("transform", posWallXTransform);
-        // Positive X - Purple
-        shaderProgram.setUniform("color", glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
-        posWallX.draw();
-
-        // Render the wall in the negative X direction
-        glm::mat4 wallXTransform = glm::mat4(1.0f);
-        shaderProgram.setUniform("transform", wallXTransform);
-        // Negative X - Blue
-        shaderProgram.setUniform("color", glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-        negWallX.draw();
-
-
-        // glm::mat4 transform = glm::mat4(1.0f);
-        // shaderProgram.setUniform("projection", projection);
-        // shaderProgram.setUniform("view", view);
-        // shaderProgram.setUniform("transform", transform);
-        // shaderProgram.setUniform("color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-        // block.draw();
         // Center the mouse cursor
         sf::Mouse::setPosition(center, window);
 

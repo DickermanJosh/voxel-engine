@@ -1,59 +1,85 @@
-// Block.cpp
 #include "Block.hpp"
 
-Block::Block(const glm::vec3& position)
-    : position(position), mesh({
-        // Define vertices for a cube (6 faces, 2 triangles per face, 3 vertices per triangle)
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
+Block::Block(const glm::vec3& position, const std::vector<bool>& visibleFaces)
+    : position(position), mesh({}, {}) {
+        generateMesh(visibleFaces);
+    }
 
-        -0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
+void Block::generateMesh(const std::vector<bool>& visibleFaces) {
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
 
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
+    // Face definitions (positions)
+    const std::vector<float> faceVertices[6] = {
+        // Negative Z face
+        {
+            -1.0f,  0.0f, -1.0f, // bottom-left
+            1.0f,  0.0f, -1.0f, // bottom-right
+            1.0f,  1.0f, -1.0f, // top-right
+            -1.0f,  1.0f, -1.0f // top-left
+        },
 
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
+        // Positive Z face
+        {
+            -1.0f,  0.0f,  1.0f,
+            -1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  0.0f,  1.0f,
+        },
 
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f, -0.5f,
+        // Negative X face
+        {
+            -1.0f,  0.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f,  1.0f,
+            -1.0f,  0.0f,  1.0f,
+        },
 
-        -0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f
-    }, {
-        // Define indices for the cube
-        0, 1, 2, 2, 3, 0,  // front face
-        4, 5, 6, 6, 7, 4,  // back face
-        8, 9, 10, 10, 11, 8, // left face
-        12, 13, 14, 14, 15, 12, // right face
-        16, 17, 18, 18, 19, 16, // bottom face
-        20, 21, 22, 22, 23, 20 // top face
-    }) {}
+        // Positive X face
+        {
+            1.0f,  0.0f, -1.0f,
+            1.0f,  0.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f, -1.0f,
+        },
+
+        // Negative Y face
+        {
+            -1.0f,  0.0f, -1.0f,
+            -1.0f,  0.0f,  1.0f,
+            1.0f,  0.0f,  1.0f,
+            1.0f,  0.0f, -1.0f
+        },
+
+        // Positive Y face
+        {
+            -1.0f,  1.0f, -1.0f,
+            1.0f,  1.0f, -1.0f,
+            1.0f,  1.0f,  1.0f,
+            -1.0f,  1.0f,  1.0f
+        }
+    };
+
+    // Face definitions (indices)
+    const std::vector<unsigned int> faceIndices = {
+        0, 1, 2, 2, 3, 0
+    };
+
+    // Add visible faces to vertices and indices
+    for (int i = 0; i < 6; ++i) {
+        if (visibleFaces[i]) {
+            int indexOffset = vertices.size() / 3; // 3 elements per vertex (3 positions)
+            vertices.insert(vertices.end(), faceVertices[i].begin(), faceVertices[i].end());
+            for (unsigned int idx : faceIndices) {
+                indices.push_back(indexOffset + idx);
+            }
+        }
+    }
+
+    // Create mesh with the generated vertices and indices
+    mesh = Mesh(vertices, indices);
+    mesh.setupMesh();
+}
 
 void Block::draw() const {
     mesh.draw();
