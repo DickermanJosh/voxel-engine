@@ -4,6 +4,9 @@ project(minecraft)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# DISABLE EVENTUALLY!!
+set(CMAKE_BUILD_TYPE Debug)
+
 # Set the policy for FindOpenGL to prefer GLVND
 cmake_policy(SET CMP0072 NEW)
 

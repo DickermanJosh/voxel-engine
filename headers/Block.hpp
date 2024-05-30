@@ -4,16 +4,18 @@
 
 #include "Mesh.hpp"
 #include <glm/glm.hpp>
+#include <vector>
 
 class Block {
 public:
     // TODO: add blocktype 
-    Block(const glm::vec3& position);
+    Block(const glm::vec3& position, const std::vector<bool>& visibleFaces);
     void draw() const;
 
 private:
     glm::vec3 position;
     Mesh mesh;
+    void generateMesh(const std::vector<bool>& visibleFaces);
 };
 
 #endif // BLOCK_HPP
