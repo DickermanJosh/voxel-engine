@@ -13,50 +13,51 @@ void Block::generateMesh(const std::vector<bool>& visibleFaces) {
     const std::vector<float> faceVertices[6] = {
         // Negative Z face
         {
-            -1.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-            1.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right
-            1.0f,  1.0f, -1.0f, 1.0f, 1.0f, // top-right
-            -1.0f,  1.0f, -1.0f, 0.0f, 1.0f // top-left
+            // x     y      z    texcoords
+            -0.5f,  0.0f, -0.5f, 0.0f, 0.0f, // bottom-left
+            0.5f,  0.0f, -0.5f, 1.0f, 0.0f, // bottom-right
+            0.5f,  1.0f, -0.5f, 1.0f, 1.0f, // top-right
+            -0.5f,  1.0f, -0.5f, 0.0f, 1.0f // top-left
         },
 
         // Positive Z face
         {
-            -1.0f,  0.0f,  1.0f, 0.0f, 0.0f,
-            -1.0f,  1.0f,  1.0f, 0.0f, 1.0f,
-            1.0f,  1.0f,  1.0f, 1.0f, 1.0f,
-            1.0f,  0.0f,  1.0f, 1.0f, 0.0f,
+            -0.5f,  0.0f,  0.5f, 0.0f, 0.0f,
+            -0.5f,  1.0f,  0.5f, 0.0f, 1.0f,
+            0.5f,  1.0f,  0.5f, 1.0f, 1.0f,
+            0.5f,  0.0f,  0.5f, 1.0f, 0.0f,
         },
 
         // Negative X face
         {
-            -1.0f,  0.0f, -1.0f, 0.0f, 0.0f,
-            -1.0f,  1.0f, -1.0f, 0.0f, 1.0f,
-            -1.0f,  1.0f,  1.0f, 1.0f, 1.0f,
-            -1.0f,  0.0f,  1.0f, 1.0f, 0.0f,
+            -0.5f,  0.0f, -0.5f, 0.0f, 0.0f,
+            -0.5f,  1.0f, -0.5f, 0.0f, 1.0f,
+            -0.5f,  1.0f,  0.5f, 1.0f, 1.0f,
+            -0.5f,  0.0f,  0.5f, 1.0f, 0.0f,
         },
 
         // Positive X face
         {
-            1.0f,  0.0f, -1.0f, 0.0f, 0.0f,
-            1.0f,  0.0f,  1.0f, 1.0f, 0.0f,
-            1.0f,  1.0f,  1.0f, 1.0f, 1.0f,
-            1.0f,  1.0f, -1.0f, 0.0f, 1.0f,
+            0.5f,  0.0f, -0.5f, 0.0f, 0.0f,
+            0.5,  0.0f,  0.5f, 1.0f, 0.0f,
+            0.5f,  1.0f,  0.5f, 1.0f, 1.0f,
+            0.5f,  1.0f, -0.5f, 0.0f, 1.0f,
         },
 
         // Negative Y face
         {
-            -1.0f,  0.0f, -1.0f, 0.0f, 0.0f,
-            -1.0f,  0.0f,  1.0f, 0.0f, 1.0f,
-            1.0f,  0.0f,  1.0f, 1.0f, 1.0f,
-            1.0f,  0.0f, -1.0f, 1.0f, 0.0f
+            -0.5f,  0.0f, -0.5f, 0.0f, 0.0f,
+            -0.5f,  0.0f,  0.5f, 0.0f, 1.0f,
+            0.5f,  0.0f,  0.5f, 1.0f, 1.0f,
+            0.5f,  0.0f, -0.5f, 1.0f, 0.0f
         },
 
         // Positive Y face
         {
-            -1.0f,  1.0f, -1.0f, 0.0f, 0.0f,
-            1.0f,  1.0f, -1.0f, 1.0f, 0.0f,
-            1.0f,  1.0f,  1.0f, 1.0f, 1.0f,
-            -1.0f,  1.0f,  1.0f, 0.0f, 1.0f
+            -0.5f,  1.0f, -0.5f, 0.0f, 0.0f,
+            0.5f,  1.0f, -0.5f, 1.0f, 0.0f,
+            0.5f,  1.0f,  0.5f, 1.0f, 1.0f,
+            -0.5f,  1.0f,  0.5f, 0.0f, 1.0f
         }
     };
 
@@ -77,6 +78,7 @@ void Block::generateMesh(const std::vector<bool>& visibleFaces) {
     }
 
     // Create mesh with the generated vertices and indices
+    // TODO: Make this mesh for each chunk, NOT each block.
     mesh = Mesh(vertices, indices);
     mesh.setupMesh();
 }

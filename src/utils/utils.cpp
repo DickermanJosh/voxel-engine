@@ -7,7 +7,8 @@ GLuint loadTexture(const char *path) {
     glGenTextures(1, &textureID);
 
     int width, height, nrComponents;
-    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+    unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
+
     if (data) {
         GLenum format;
         if (nrComponents == 1)
