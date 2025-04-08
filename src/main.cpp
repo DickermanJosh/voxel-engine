@@ -39,7 +39,7 @@ int main() {
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    glFrontFace(GL_CW); // Count-clockwise winding order for front faces
+    glFrontFace(GL_CW); // Counter-clockwise winding order for front faces
 
     ShaderProgram shaderProgram("../res/shaders/vertex.glsl", "../res/shaders/fragment.glsl");
 
@@ -47,7 +47,7 @@ int main() {
     shaderProgram.use();
     shaderProgram.setUniform("textureAtlas", 0);
 
-    GrassBlock block(glm::vec3(0.0f, 0.0f, 0.0f));
+    GrassBlock block(glm::vec3(0.0f, 0.0f, 0.0f), std::vector<bool>(6, true));
 
     // Camera Setup
     glm::vec3 cameraPos = glm::vec3(0.0f, 1.0f, 3.0f);
