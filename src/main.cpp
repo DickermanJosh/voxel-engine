@@ -11,6 +11,7 @@
 #include "Utils.hpp"
 #include "ShaderProgram.hpp"
 #include "GrassBlock.hpp"
+#include "StoneBlock.hpp"
 #include "Camera.hpp"
 #include "CameraController.hpp"
 #include "EventHandler.hpp"
@@ -48,6 +49,7 @@ int main() {
     shaderProgram.setUniform("textureAtlas", 0);
 
     GrassBlock block(glm::vec3(0.0f, 0.0f, 0.0f), std::vector<bool>(6, true));
+    StoneBlock stoneBlock(glm::vec3(0.0f, 2.0f, 0.0f), std::vector<bool>(6, true));
 
     // Camera Setup
     glm::vec3 cameraPos = glm::vec3(0.0f, 1.0f, 3.0f);
@@ -90,6 +92,7 @@ int main() {
         shaderProgram.setUniform("view", view);
         shaderProgram.setUniform("transform", blockTransform);
         block.draw();
+        stoneBlock.draw();
 
         // Center the mouse cursor
         sf::Mouse::setPosition(center, window);
