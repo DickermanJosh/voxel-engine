@@ -8,8 +8,9 @@
 #include <glm/gtx/string_cast.hpp>
 #include <iostream>
 
+#include "Utils.hpp"
 #include "ShaderProgram.hpp"
-#include "Block.hpp"
+#include "GrassBlock.hpp"
 #include "Camera.hpp"
 #include "CameraController.hpp"
 #include "EventHandler.hpp"
@@ -42,6 +43,12 @@ int main() {
 
     ShaderProgram shaderProgram("../res/shaders/vertex.glsl", "../res/shaders/fragment.glsl");
 
+    GLuint textureAtlas = loadTexture("../res/blocks.png");
+    shaderProgram.use();
+    shaderProgram.setUniform("textureAtlas", 0);
+
+    GrassBlock block(glm::vec3(0.0f, 0.0f, 0.0f));
+
     // Camera Setup
     glm::vec3 cameraPos = glm::vec3(0.0f, 1.0f, 3.0f);
     glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -55,9 +62,6 @@ int main() {
     // Clock for keeping track of deltatime. TODO: Cap at 144fps
     sf::Clock clock;
     float lastFrame = 0.0f;
-
-    std::vector<bool> visibleFaces = {true, true, true, true, true, true};
-    Block block(glm::vec3(0.0f, 0.0f, 0.0f), visibleFaces);
 
     while (window.isOpen()) {
         float currentFrame = clock.getElapsedTime().asSeconds();
@@ -85,7 +89,6 @@ int main() {
         shaderProgram.setUniform("projection", projection);
         shaderProgram.setUniform("view", view);
         shaderProgram.setUniform("transform", blockTransform);
-        shaderProgram.setUniform("color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         block.draw();
 
         // Center the mouse cursor
