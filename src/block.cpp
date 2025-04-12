@@ -55,8 +55,6 @@ void Block::defineRenderedFaces(MeshPack& pack, const std::vector<bool>& visible
     }
 }
 
-
-
 std::vector<unsigned int> Block::getFaceIndices() {
     return baseFaceIndices;
 }

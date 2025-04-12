@@ -23,7 +23,7 @@ find_package(GLEW REQUIRED)
 find_package(glm REQUIRED)
 
 # Include Headers
-include_directories(${CMAKE_SOURCE_DIR}/headers)
+# include_directories(${CMAKE_SOURCE_DIR}/headers)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_INCLUDE_DIRS})
 
