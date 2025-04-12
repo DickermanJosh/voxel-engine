@@ -7,6 +7,9 @@
 
 class Camera {
     public:
+        static constexpr float BASE_MOVE_SPEED = 5.0f;
+        static constexpr float SPRINT_MOVE_SPEED = 15.0f;
+    public:
         glm::vec3 getPosition() const;
         glm::mat4 getViewMatrix() const;
         glm::mat4 getProjectionMatrix(float aspectRatio) const;

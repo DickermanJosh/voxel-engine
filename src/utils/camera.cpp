@@ -2,7 +2,7 @@
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     : m_Position(position), m_WorldUp(up), m_Yaw(yaw), m_Pitch(pitch),
-      m_MovementSpeed(2.5f), m_MouseSensitivity(0.1f) {
+      m_MovementSpeed(BASE_MOVE_SPEED), m_MouseSensitivity(0.1f) {
     updateCameraVectorsInternal();
 }
 
@@ -32,6 +32,15 @@ void Camera::processKeyboard(bool* keys, float deltaTime) {
         m_Position -= m_Right * velocity;
     if (keys[sf::Keyboard::D])
         m_Position += m_Right * velocity;
+    if (keys[sf::Keyboard::Space])
+        m_Position += m_Up * velocity;
+
+    // Toggle fast move
+    if (keys[sf::Keyboard::LShift]) {
+        m_MovementSpeed = SPRINT_MOVE_SPEED;
+    }else {
+        m_MovementSpeed = BASE_MOVE_SPEED;
+    }
 }
 
 void Camera::processMouseMovement(float xoffset, float yoffset) {
