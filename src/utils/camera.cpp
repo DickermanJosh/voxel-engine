@@ -29,9 +29,9 @@ void Camera::processKeyboard(bool* keys, float deltaTime) {
     if (keys[sf::Keyboard::S])
         m_Position -= m_Front * velocity;
     if (keys[sf::Keyboard::A])
-        m_Position -= m_Front * velocity;
+        m_Position -= m_Right * velocity;
     if (keys[sf::Keyboard::D])
-        m_Position += m_Front * velocity;
+        m_Position += m_Right * velocity;
 }
 
 void Camera::processMouseMovement(float xoffset, float yoffset) {
