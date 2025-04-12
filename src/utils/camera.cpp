@@ -1,17 +1,21 @@
 #include "Camera.hpp"
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
-    : position(position), worldUp(up), yaw(yaw), pitch(pitch),
-      movementSpeed(2.5f), mouseSensitivity(0.1f) {
-    updateCameraVectors();
+    : m_Position(position), m_WorldUp(up), m_Yaw(yaw), m_Pitch(pitch),
+      m_MovementSpeed(2.5f), m_MouseSensitivity(0.1f) {
+    updateCameraVectorsInternal();
 }
 
 Camera::~Camera() {
     // TODO
 }
 
+glm::vec3 Camera::getPosition() const {
+    return m_Position;
+}
+
 glm::mat4 Camera::getViewMatrix() const {
-    return glm::lookAt(position, position + front, up);
+    return glm::lookAt(m_Position, m_Position + m_Front, m_Up);
 }
 
 glm::mat4 Camera::getProjectionMatrix(float aspectRatio) const {
@@ -19,44 +23,40 @@ glm::mat4 Camera::getProjectionMatrix(float aspectRatio) const {
 }
 
 void Camera::processKeyboard(bool* keys, float deltaTime) {
-    float velocity = static_cast<float>(movementSpeed * deltaTime);
+    float velocity = static_cast<float>(m_MovementSpeed * deltaTime);
     if (keys[sf::Keyboard::W])
-        position += front * velocity;
+        m_Position += m_Front * velocity;
     if (keys[sf::Keyboard::S])
-        position -= front * velocity;
+        m_Position -= m_Front * velocity;
     if (keys[sf::Keyboard::A])
-        position -= right * velocity;
+        m_Position -= m_Front * velocity;
     if (keys[sf::Keyboard::D])
-        position += right * velocity;
+        m_Position += m_Front * velocity;
 }
 
 void Camera::processMouseMovement(float xoffset, float yoffset) {
-    xoffset *= mouseSensitivity * 0.1;
-    yoffset *= mouseSensitivity * 0.1;
+    xoffset *= m_MouseSensitivity * 0.1;
+    yoffset *= m_MouseSensitivity * 0.1;
 
-    yaw += xoffset;
-    pitch += yoffset;
+    m_Yaw += xoffset;
+    m_Pitch += yoffset;
 
     // clamp camera rotation
-    if (pitch > 89.0f)
-        pitch = 89.0f;
-    if (pitch < -89.0f)
-        pitch = -89.0f;
+    if (m_Pitch > 89.0f)
+        m_Pitch = 89.0f;
+    if (m_Pitch < -89.0f)
+        m_Pitch = -89.0f;
 
-    updateCameraVectors();
+    updateCameraVectorsInternal();
 }
 
-glm::vec3 Camera::getPosition() const {
-    return position;
-}
-
-void Camera::updateCameraVectors() {
+void Camera::updateCameraVectorsInternal() {
     glm::vec3 front;
-    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    front.y = sin(glm::radians(pitch));
-    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    this->front = glm::normalize(front);
-    this->right = glm::normalize(glm::cross(this->front, this->worldUp));
-    this->up = glm::normalize(glm::cross(this->right, this->front));
+    front.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
+    front.y = sin(glm::radians(m_Pitch));
+    front.z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
+    this->m_Front = glm::normalize(front);
+    this->m_Right = glm::normalize(glm::cross(this->m_Front, this->m_WorldUp));
+    this->m_Up = glm::normalize(glm::cross(this->m_Right, this->m_Front));
 }
 

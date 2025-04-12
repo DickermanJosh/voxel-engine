@@ -2,7 +2,7 @@
 #include <GL/gl.h>
 
 void EventHandler::addEventListener(EventListener* listener) {
-    listeners.push_back(listener);
+    m_Listeners.push_back(listener);
 }
 
 void EventHandler::processEvents(sf::Window& window) {
@@ -10,15 +10,15 @@ void EventHandler::processEvents(sf::Window& window) {
     while (window.pollEvent(event)) {
         switch (event.type) {
             case sf::Event::KeyPressed:
-                for (auto listener : listeners)
+                for (auto listener : m_Listeners)
                     listener->onKeyPress(event.key.code);
                 break;
             case sf::Event::KeyReleased:
-                for (auto listener : listeners)
+                for (auto listener : m_Listeners)
                     listener->onKeyRelease(event.key.code);
                 break;
             case sf::Event::MouseMoved:
-                for (auto listener : listeners) {
+                for (auto listener : m_Listeners) {
                     sf::Vector2u windowSize = window.getSize();
                     sf::Vector2i center(windowSize.x / 2, windowSize.y / 2);
                     listener->onMouseMove(center.x, center.y, event.mouseMove.x, event.mouseMove.y);

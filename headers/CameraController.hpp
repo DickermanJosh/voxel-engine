@@ -6,23 +6,22 @@
 #include <SFML/Window.hpp>
 
 class CameraController : public EventListener {
-public:
-    CameraController(Camera& camera);
+    public:
+        void onKeyPress(sf::Keyboard::Key key) override;
+        void onKeyRelease(sf::Keyboard::Key key) override;
+        void onMouseMove(float xcenter, float ycenter, float xoffset, float yoffset) override;
+        void update(float deltaTime);
 
-    void onKeyPress(sf::Keyboard::Key key) override;
-    void onKeyRelease(sf::Keyboard::Key key) override;
-    void onMouseMove(float xcenter, float ycenter, float xoffset, float yoffset) override;
+        CameraController(Camera& camera);
 
-    void update(float deltaTime);
-
-private:
-    Camera& camera;
-    bool keys[1024];
-    float lastX;
-    float lastY;
-    bool firstMouse;
-
-    void processKeyboard(float deltaTime);
+    private:
+        Camera& m_Camera;
+        bool m_Keys[1024];
+        float m_LastX;
+        float m_LastY;
+        bool m_FirstMouse;
+    private:
+        void processKeyboardInternal(float deltaTime);
 };
 
 #endif // CAMERACONTROLLER_HPP

@@ -1,18 +1,20 @@
-// #ifndef MESH_HPP
+#ifndef MESH_HPP
 #define MESH_HPP
 
 #include <GL/glew.h>
-#include <vector>
+#include <MeshPack.hpp>
 
 class Mesh {
     public:
-        Mesh(const std::vector<float>& vertices, const std::vector<unsigned int>& indices);
-        ~Mesh();
         void draw() const;
         void setupMesh();
 
+        Mesh(const MeshPack& pack);
+        ~Mesh();
+
     private:
-        unsigned int VAO, VBO, EBO;
-        std::vector<float> vertices;
-        std::vector<unsigned int> indices;
+        unsigned int m_VAO, m_VBO, m_EBO;
+        MeshPack m_MeshPack;
 };
+
+#endif // MESH_HPP

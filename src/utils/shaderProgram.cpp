@@ -12,16 +12,16 @@ ShaderProgram::ShaderProgram(const std::string& vertexPath, const std::string& f
     GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentCode);
 
     // Create the program & bind the shaders
-    program = glCreateProgram();
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, fragmentShader);
-    glLinkProgram(program);
+    m_Program = glCreateProgram();
+    glAttachShader(m_Program, vertexShader);
+    glAttachShader(m_Program, fragmentShader);
+    glLinkProgram(m_Program);
 
     GLint success;
-    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    glGetProgramiv(m_Program, GL_LINK_STATUS, &success);
     if (!success) {
         char infoLog[512];
-        glGetProgramInfoLog(program, 512, nullptr, infoLog);
+        glGetProgramInfoLog(m_Program, 512, nullptr, infoLog);
         std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
 
@@ -31,15 +31,15 @@ ShaderProgram::ShaderProgram(const std::string& vertexPath, const std::string& f
 }
 
 ShaderProgram::~ShaderProgram() {
-    glDeleteProgram(program);
+    glDeleteProgram(m_Program);
 }
 
 void ShaderProgram::use() {
-    glUseProgram(program);
+    glUseProgram(m_Program);
 }
 
 GLuint ShaderProgram::getProgram() const {
-    return program;
+    return m_Program;
 }
 
 // Compile a shader with OpenGL
@@ -69,7 +69,7 @@ std::string ShaderProgram::readFile(const std::string& filePath) {
 }
 
 void ShaderProgram::setUniform(const std::string& name, const glm::mat4& matrix) {
-    GLint location = glGetUniformLocation(program, name.c_str());
+    GLint location = glGetUniformLocation(m_Program, name.c_str());
     if (location == -1) {
         std::cerr << "Warning: uniform '" << name << "' doesn't exist!" << std::endl;
         return;
@@ -79,7 +79,7 @@ void ShaderProgram::setUniform(const std::string& name, const glm::mat4& matrix)
 }
 
 void ShaderProgram::setUniform(const std::string& name, const glm::vec4& value) {
-    GLint location = glGetUniformLocation(program, name.c_str());
+    GLint location = glGetUniformLocation(m_Program, name.c_str());
     if (location == -1) {
         std::cerr << "Warning: uniform '" << name << "' doesn't exist!" << std::endl;
         return;

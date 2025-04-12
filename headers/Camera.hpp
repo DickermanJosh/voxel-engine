@@ -6,32 +6,30 @@
 #include <SFML/Window.hpp>
 
 class Camera {
-public:
-    Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch);
-    ~Camera();
+    public:
+        glm::vec3 getPosition() const;
+        glm::mat4 getViewMatrix() const;
+        glm::mat4 getProjectionMatrix(float aspectRatio) const;
+        void processKeyboard(bool* keys, float deltaTime);
+        void processMouseMovement(float xoffset, float yoffset);
 
-    glm::mat4 getViewMatrix() const;
-    glm::mat4 getProjectionMatrix(float aspectRatio) const;
+        Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch);
+        ~Camera();
 
-    void processKeyboard(bool* keys, float deltaTime);
-    void processMouseMovement(float xoffset, float yoffset);
+    private:
+        glm::vec3 m_Position;
+        glm::vec3 m_Front;
+        glm::vec3 m_Up;
+        glm::vec3 m_Right;
+        glm::vec3 m_WorldUp;
 
-    glm::vec3 getPosition() const;
+        float m_Yaw;
+        float m_Pitch;
 
-private:
-    glm::vec3 position;
-    glm::vec3 front;
-    glm::vec3 up;
-    glm::vec3 right;
-    glm::vec3 worldUp;
-
-    float yaw;
-    float pitch;
-
-    float movementSpeed;
-    float mouseSensitivity;
-
-    void updateCameraVectors();
+        float m_MovementSpeed;
+        float m_MouseSensitivity;
+    private:
+        void updateCameraVectorsInternal();
 };
 
 #endif // CAMERA_HPP

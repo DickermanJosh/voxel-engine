@@ -5,13 +5,12 @@
 #include "EventListener.hpp"
 
 class EventHandler {
-public:
-    void addEventListener(EventListener* listener);
+    public:
+        void addEventListener(EventListener* listener);
+        void processEvents(sf::Window& window);
 
-    void processEvents(sf::Window& window);
-
-private:
-    std::vector<EventListener*> listeners;
+    private:
+        std::vector<EventListener*> m_Listeners;
 };
 
 #endif // EVENTHANDLER_HPP
