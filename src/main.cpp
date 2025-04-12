@@ -8,6 +8,10 @@
 #include <glm/gtx/string_cast.hpp>
 #include <iostream>
 
+#include <SFML/Graphics.hpp> // For font
+#include <sstream>
+#include <iomanip>
+
 #include "Chunk.hpp"
 #include "Utils.hpp"
 #include "ShaderProgram.hpp"
@@ -23,7 +27,7 @@ int main() {
     settings.majorVersion = 4;
     settings.minorVersion = 6;
 
-    sf::Window window(sf::VideoMode(2560, 1440), "Minecraft", sf::Style::Default, settings);
+    sf::RenderWindow window(sf::VideoMode(2560, 1440), "Minecraft", sf::Style::Default, settings);
     window.setActive(true);
     window.setMouseCursorVisible(false);
     window.setVerticalSyncEnabled(true);
@@ -33,6 +37,27 @@ int main() {
         std::cerr << "Failed to init GLEW: " << glewGetErrorString(err) << std::endl;
         return -1;
     }
+
+    /// FONT INIT
+    sf::Font font;
+    if (!font.loadFromFile("../res/fonts/SpecialGothicCondensedOne-Regular.ttf")) {
+        std::cerr <<"Failed to load ARIAL.TTF" << std::endl;
+        return -1;
+    }
+
+    sf::Text fpsText;
+    fpsText.setFont(font);
+    fpsText.setCharacterSize(28);
+    fpsText.setFillColor(sf::Color::White);
+    fpsText.setPosition(10.f, 10.f);
+
+    sf::Text posText;
+    posText.setFont(font);
+    posText.setCharacterSize(28);
+    posText.setFillColor(sf::Color::White);
+    posText.setPosition(10.f, 30.f); // Slightly below the FPS
+
+    /// END FONT INIT
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
@@ -66,6 +91,10 @@ int main() {
     sf::Clock clock;
     float lastFrame = 0.0f;
 
+    float fpsTimer = 0.0f;
+    unsigned int frameCount = 0;
+    float currentFPS = 0.0f;
+
     while (window.isOpen()) {
         float currentFrame = clock.getElapsedTime().asSeconds();
         float deltaTime = currentFrame - lastFrame;
@@ -97,6 +126,30 @@ int main() {
 
         // Center the mouse cursor
         sf::Mouse::setPosition(center, window);
+
+        frameCount++;
+        fpsTimer += deltaTime;
+        if (fpsTimer >= 0.5f) { // Update every 0.5 seconds
+            currentFPS = static_cast<float>(frameCount) / fpsTimer;
+            fpsText.setString("FPS: " + std::to_string(static_cast<int>(currentFPS)));
+
+            glm::vec3 camPos = camera.getPosition();
+            std::ostringstream posStream;
+            posStream << std::fixed << std::setprecision(2) << "\n"
+                << "x: " << camPos.x << "\n"
+                << "Y: " << camPos.y << "\n"
+                << "Z: " << camPos.z << std::endl;
+            posText.setString(posStream.str());
+
+            fpsTimer = 0.0f;
+            frameCount = 0;
+        }
+
+        window.pushGLStates();
+        sf::RenderWindow* renderWindow = static_cast<sf::RenderWindow*>(&window);
+        renderWindow->draw(fpsText);
+        renderWindow->draw(posText);
+        window.popGLStates();
 
         window.display();
 
