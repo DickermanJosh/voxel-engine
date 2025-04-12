@@ -16,5 +16,10 @@ if [ ! -f "./minecraft" ]; then
     exit 1
 fi
 
-# Run the executable with gdb
-gdb ./minecraft -ex "run" -ex "bt" -ex "quit"
+if [[ "$1" == "-d" ]]; then
+    echo "Launching in GDB..."
+    gdb ./minecraft -ex "run" -ex "bt" -ex "quit"
+else
+    echo "Launching in normal mode..."
+    ./minecraft
+fi
