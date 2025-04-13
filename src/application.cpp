@@ -32,17 +32,15 @@ Application::Application()
         
     }
 
-    sf::Text fpsText;
-    fpsText.setFont(m_Font);
-    fpsText.setCharacterSize(28);
-    fpsText.setFillColor(sf::Color::White);
-    fpsText.setPosition(10.f, 10.f);
+    m_fpsText.setFont(m_Font);
+    m_fpsText.setCharacterSize(28);
+    m_fpsText.setFillColor(sf::Color::White);
+    m_fpsText.setPosition(10.f, 10.f);
 
-    sf::Text posText;
-    posText.setFont(m_Font);
-    posText.setCharacterSize(28);
-    posText.setFillColor(sf::Color::White);
-    posText.setPosition(10.f, 30.f); // Slightly below the FPS
+    m_PosText.setFont(m_Font);
+    m_PosText.setCharacterSize(28);
+    m_PosText.setFillColor(sf::Color::White);
+    m_PosText.setPosition(10.f, 30.f); // Slightly below the FPS
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
@@ -120,12 +118,15 @@ void Application::render(float deltaTime) {
     m_ShaderProgram->setUniform("view", view);
     m_ShaderProgram->setUniform("transform", glm::mat4(1.0f));
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_TextureAtlas);
+
     m_Chunk->draw();
 
     updateOverlay(deltaTime);
 
-    m_Window.pushGLStates();
     sf::RenderWindow* renderWindow = static_cast<sf::RenderWindow*>(&m_Window);
+    m_Window.pushGLStates();
     
     renderWindow->draw(m_fpsText);
     renderWindow->draw(m_PosText);
