@@ -4,8 +4,7 @@ Chunk::Chunk(const glm::vec3& pos)
     : m_Position(pos),
       m_Blocks((kChunkWidth * kChunkHeight * kChunkDepth), BlockType::Air), // default everything to BlockType::Air
       m_BlockObjs((kChunkWidth * kChunkHeight * kChunkDepth)), // default everything with std::optional
-      m_Mesh({})
-{
+      m_Mesh({}) {
     // basic testing
     for (int y = 0; y < kChunkHeight; ++y) {
         for (int z = 0; z < kChunkDepth; ++z) {
@@ -26,8 +25,21 @@ Chunk::Chunk(const glm::vec3& pos)
     generateMesh();
 }
 
-void Chunk::generateMesh()
-{
+void Chunk::setBlock(int x, int y, int z, BlockType type) {
+    m_Blocks[index(x,y,z)] = type;
+
+    if (type == BlockType::Air) {
+        m_BlockObjs[index(x,y,z)] = std::nullopt;
+        return;
+    }
+
+    m_BlockObjs[index(x,y,z)] = Block(type, glm::vec3(x,y,z));
+}
+
+void Chunk::generateMesh() {
+    m_MeshPack.vertices.clear();
+    m_MeshPack.indices.clear();
+
     m_MeshPack.vertices.reserve(kChunkWidth * kChunkHeight * kChunkDepth * 6 * 4 * 5); // Rough upper bound
     m_MeshPack.indices.reserve(kChunkWidth * kChunkHeight * kChunkDepth * 6 * 6);
 
@@ -85,17 +97,14 @@ void Chunk::generateMesh()
     m_Mesh.setupMesh();
 }
 
-void Chunk::draw() const
-{
+void Chunk::draw() const {
     m_Mesh.draw();
 }
 
-BlockType Chunk::getBlock(int x, int y, int z) const
-{
+BlockType Chunk::getBlock(int x, int y, int z) const {
     return m_Blocks[index(x, y, z)];
 }
 
-std::optional<Block> Chunk::getBlockObj(int x, int y, int z) const
-{
+std::optional<Block> Chunk::getBlockObj(int x, int y, int z) const {
     return m_BlockObjs[index(x, y, z)];
 }

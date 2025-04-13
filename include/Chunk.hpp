@@ -23,6 +23,7 @@ class Chunk {
             { 0,  1,  0}
         };
     public:
+        void setBlock(int x, int y, int z, BlockType type);
         void generateMesh();
         void draw() const;
 

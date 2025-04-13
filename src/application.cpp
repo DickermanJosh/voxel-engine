@@ -62,7 +62,8 @@ Application::Application()
 
     // GrassBlock block(glm::vec3(0.0f, 0.0f, 0.0f), std::vector<bool>(6, true));
     // StoneBlock stoneBlock(glm::vec3(0.0f, 2.0f, 0.0f), std::vector<bool>(6, true));
-    m_Chunk = std::make_unique<Chunk>(glm::vec3(0.0f, 0.0f, 0.0f));
+    uint64_t rand_seed = generate_uint64_t();
+    m_World = std::make_unique<World>(rand_seed);
 
     // Camera Setup
     glm::vec3 cameraPos = glm::vec3(0.0f, 1.0f, 3.0f);
@@ -101,6 +102,7 @@ void Application::processEvents() {
 
 void Application::update(float deltaTime) {
     m_CameraController->update(deltaTime);
+    m_World->update(*m_Camera.get(), deltaTime);
 }
 
 void Application::render(float deltaTime) {
@@ -121,7 +123,7 @@ void Application::render(float deltaTime) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_TextureAtlas);
 
-    m_Chunk->draw();
+    m_World->draw();
 
     updateOverlay(deltaTime);
 

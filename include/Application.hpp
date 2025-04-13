@@ -14,7 +14,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Clock.hpp>
 
-#include "Chunk.hpp"
+#include "World.hpp"
 #include "ShaderProgram.hpp"
 #include "Camera.hpp"
 #include "CameraController.hpp"
@@ -44,7 +44,7 @@ class Application {
         std::unique_ptr<ShaderProgram> m_ShaderProgram;
         GLuint m_TextureAtlas;
 
-        std::unique_ptr<Chunk> m_Chunk; // TODO: Replace with world
+        std::unique_ptr<World> m_World;
         std::unique_ptr<Camera> m_Camera;
         std::unique_ptr<CameraController> m_CameraController;
         EventHandler m_EventHandler;

@@ -4,8 +4,7 @@
 /// remap (u,v) from [0..1, 0..1] into a sub-tile (tileX, tileY) in a 16x16 atlas
 ///<summary/>
 static std::vector<float> remapFaceUV(const std::vector<float>& faceVerts,
-                                      int tileX, int tileY)
-{
+                                      int tileX, int tileY) {
     std::vector<float> newFace = faceVerts; // copy
     for (size_t i = 0; i < newFace.size(); i += 5) {
         float oldU = newFace[i+3];

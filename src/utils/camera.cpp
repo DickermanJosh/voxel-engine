@@ -24,21 +24,29 @@ glm::mat4 Camera::getProjectionMatrix(float aspectRatio) const {
 
 void Camera::processKeyboard(bool* keys, float deltaTime) {
     float velocity = static_cast<float>(m_MovementSpeed * deltaTime);
-    if (keys[sf::Keyboard::W])
+    if (keys[sf::Keyboard::W]) {
         m_Position += m_Front * velocity;
-    if (keys[sf::Keyboard::S])
-        m_Position -= m_Front * velocity;
-    if (keys[sf::Keyboard::A])
-        m_Position -= m_Right * velocity;
-    if (keys[sf::Keyboard::D])
-        m_Position += m_Right * velocity;
-    if (keys[sf::Keyboard::Space])
-        m_Position += m_Up * velocity;
+    }
 
-    // Toggle fast move
+    if (keys[sf::Keyboard::A]) {
+        m_Position -= m_Right * velocity;
+    }
+
+    if (keys[sf::Keyboard::S]) {
+        m_Position -= m_Front * velocity;
+    }
+
+    if (keys[sf::Keyboard::D]) {
+        m_Position += m_Right * velocity;
+    }
+
+    if (keys[sf::Keyboard::Space]) {
+        m_Position += m_Up * velocity;
+    }
+
     if (keys[sf::Keyboard::LShift]) {
         m_MovementSpeed = SPRINT_MOVE_SPEED;
-    }else {
+    } else {
         m_MovementSpeed = BASE_MOVE_SPEED;
     }
 }
