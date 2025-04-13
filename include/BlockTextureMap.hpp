@@ -7,11 +7,11 @@
 #include <utility>
 
 // 6 faces per block
-constexpr int NUM_FACES = 6;
-constexpr int UNIQUE_BLOCKS = 3;
+static constexpr int NUM_FACES = 6;
+static constexpr int UNIQUE_BLOCKS = 3;
 
 // Indexed by BlockType (as integer) and face index
-inline const std::array<std::array<std::pair<int, int>, NUM_FACES>, UNIQUE_BLOCKS> blockTextureMap = {{
+inline static const std::array<std::array<std::pair<int, int>, NUM_FACES>, UNIQUE_BLOCKS> blockTextureMap = {{
     // Stone
     {{{3, 0}, {3, 0}, {3, 0}, {3, 0}, {3, 0}, {3, 0}}},
 

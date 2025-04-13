@@ -18,8 +18,8 @@ fi
 
 if [[ "$1" == "-d" ]]; then
     echo "Launching in GDB..."
-    gdb ./minecraft -ex "run" -ex "bt" -ex "quit"
+    gdb ./minecraft -ex "run" -ex "bt" -ex "quit" | tee log.txt
 else
     echo "Launching in normal mode..."
-    ./minecraft
+    ./minecraft 2>&1 | tee log.txt
 fi
