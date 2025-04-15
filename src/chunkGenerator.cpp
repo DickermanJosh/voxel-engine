@@ -1,9 +1,8 @@
 #include "ChunkGenerator.hpp"
-#include <iostream>
 
 void ChunkGenerator::populateChunk(Chunk& chunk, int cx, int cy, int cz)
 {
-    std::cout << "Populating chunk at " << cx << ", " << cy << ", " << cz << std::endl;
+    // std::cout << "Populating chunk at " << cx << ", " << cy << ", " << cz << std::endl;
     float worldOffsetX = cx * Chunk::kChunkWidth;
     float worldOffsetY = cy * Chunk::kChunkHeight;
     float worldOffsetZ = cz * Chunk::kChunkDepth;
@@ -23,19 +22,24 @@ void ChunkGenerator::populateChunk(Chunk& chunk, int cx, int cy, int cz)
             int terrainHeight = static_cast<int>(noiseVal * (Chunk::kChunkHeight - 1));
 
             for (int y = 0; y < Chunk::kChunkHeight; ++y) {
-                if (y < terrainHeight && y > terrainHeight - 4) {
-                    chunk.setBlock(x, y, z, BlockType::Dirt);
-                }
-                else if (y < terrainHeight) {
+                if (cy == 0) {
+                        if (y < terrainHeight && y > terrainHeight - 4) {
+                            chunk.setBlock(x, y, z, BlockType::Dirt);
+                        }
+                        else if (y < terrainHeight) {
+                            chunk.setBlock(x, y, z, BlockType::Stone);
+                        }
+                        else if (y == terrainHeight) {
+                            chunk.setBlock(x, y, z, BlockType::Grass);
+                            // chunk.setBlock(x, y, z, BlockType::Air);
+                        }
+                        else {
+                            chunk.setBlock(x, y, z, BlockType::Air);
+                        }
+                } else if (cy < 0) {
                     chunk.setBlock(x, y, z, BlockType::Stone);
                 }
-                else if (y == terrainHeight) {
-                    chunk.setBlock(x, y, z, BlockType::Grass);
-                    // chunk.setBlock(x, y, z, BlockType::Air);
-                }
-                else {
-                    chunk.setBlock(x, y, z, BlockType::Air);
-                }
+
             }
         }
     }

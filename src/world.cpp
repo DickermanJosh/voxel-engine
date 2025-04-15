@@ -1,7 +1,6 @@
 #include "World.hpp"
 #include "ChunkGenerator.hpp"
 #include <iostream>
-#include <unordered_set>
 
 
 World::World(uint64_t seed) 
@@ -75,7 +74,7 @@ Chunk* World::getChunk(int cx, int cy, int cz) {
     // Store in the map
     Chunk* chunkPtr = newChunk.get();
     m_Chunks[key] = std::move(newChunk);
-    std::cout << "Chunks map size: "<< m_Chunks.size() << std::endl;
+    // std::cout << "Chunks map size: "<< m_Chunks.size() << std::endl;
     return chunkPtr;
 }
 

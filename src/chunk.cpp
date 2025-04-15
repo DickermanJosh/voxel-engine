@@ -7,7 +7,7 @@ Chunk::Chunk(const glm::vec3& pos)
       m_BlockObjs((kChunkWidth * kChunkHeight * kChunkDepth)), // default everything with std::optional
       m_Mesh({}) {
 
-          std::cout << "Creating chunk @ pos: " << pos.x << ", " << pos.y << "," << pos.z << std::endl;
+          // std::cout << "Creating chunk @ pos: " << pos.x << ", " << pos.y << "," << pos.z << std::endl;
 }
 
 void Chunk::setBlock(int x, int y, int z, BlockType type) {
@@ -85,8 +85,8 @@ void Chunk::generateMesh() {
     m_Mesh = Mesh(pack);
     m_Mesh.setupMesh();
 
-    std::cout << "Vertices: " << pack.vertices.size() << std::endl;
-    std::cout << "Indices: " << pack.indices.size() << std::endl;
+    // std::cout << "Vertices: " << pack.vertices.size() << std::endl;
+    // std::cout << "Indices: " << pack.indices.size() << std::endl;
 }
 
 void Chunk::draw() const {
