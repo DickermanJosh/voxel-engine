@@ -8,7 +8,6 @@ Chunk::Chunk(const glm::vec3& pos)
       m_Mesh({}) {
 
           std::cout << "Creating chunk @ pos: " << pos.x << ", " << pos.y << "," << pos.z << std::endl;
-    // generateMesh();
 }
 
 void Chunk::setBlock(int x, int y, int z, BlockType type) {
@@ -24,8 +23,6 @@ void Chunk::setBlock(int x, int y, int z, BlockType type) {
 }
 
 void Chunk::generateMesh() {
-    // m_MeshPack.vertices.clear();
-    // m_MeshPack.indices.clear();
     MeshPack pack;
 
     pack.vertices.reserve(kChunkWidth * kChunkHeight * kChunkDepth * 6 * 4 * 5); // Rough upper bound
@@ -48,15 +45,6 @@ void Chunk::generateMesh() {
 
                 // For each face:
                 for (int faceIndex = 0; faceIndex < 6; ++faceIndex) {
-
-                    /*if (faceIndex != 5) {
-                        visibleFaces.push_back(false);
-                        continue;
-                    } else {
-                        visibleFaces.push_back(true);
-                        continue;
-                    }*/
-
                     // Find neighbor coords
                     int nx = x + neighborOffsets[faceIndex].x;
                     int ny = y + neighborOffsets[faceIndex].y;
@@ -67,6 +55,11 @@ void Chunk::generateMesh() {
                             ny >= 0 && ny < kChunkHeight &&
                             nz >= 0 && nz < kChunkDepth);
 
+                    // TODO: Cull faces in between chunks
+                    // Ask world for chunk in dir we are facing
+                    // if it exists translate the pos to find the neighboring block and see its state
+                    // if not, ask the world to generate it if it is inside out render distance
+                    // if not in render distance set face to visible
                     if (!neighborInRange) {
                         visibleFaces.push_back(true);
                         continue;

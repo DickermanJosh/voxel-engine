@@ -12,7 +12,7 @@
 
 class World {
     public:
-        static constexpr int VIEW_DISTANCE = 5; // Chunk units
+        static constexpr int VIEW_DISTANCE = 15; // Chunk units
     public:
         Chunk* getChunk(int cx, int cy, int cz);
         void update(Camera& camera, float dt);
