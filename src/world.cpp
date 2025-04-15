@@ -7,7 +7,10 @@
 World::World(uint64_t seed) 
     : m_Seed(seed), m_ChunkGenerator(seed) {
     std::cout << "World init with seed: " << seed << std::endl;
-    getChunk(0, 0, 0);
+    Chunk* c1 = getChunk(0, 0, 0);
+    Chunk* c2 = getChunk(1, 0, 0);
+    c1->generateMesh();
+    c2->generateMesh();
 };
 
 void World::update(Camera& camera, float dt) {
@@ -66,6 +69,7 @@ Chunk* World::getChunk(int cx, int cy, int cz) {
     // Store in the map
     Chunk* chunkPtr = newChunk.get();
     m_Chunks[key] = std::move(newChunk);
+    std::cout << "Chunks map size: "<< m_Chunks.size() << std::endl;
     return chunkPtr;
 }
 

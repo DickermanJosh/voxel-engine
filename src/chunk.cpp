@@ -7,6 +7,7 @@ Chunk::Chunk(const glm::vec3& pos)
       m_BlockObjs((kChunkWidth * kChunkHeight * kChunkDepth)), // default everything with std::optional
       m_Mesh({}) {
 
+          std::cout << "Creating chunk @ pos: " << pos.x << ", " << pos.y << "," << pos.z << std::endl;
     // generateMesh();
 }
 
@@ -18,7 +19,8 @@ void Chunk::setBlock(int x, int y, int z, BlockType type) {
         return;
     }
 
-    m_BlockObjs[index(x,y,z)] = Block(type, glm::vec3(x,y,z));
+    glm::vec3 worldSpaceCoords = {x * Chunk::kChunkWidth, y * Chunk::kChunkHeight, z * Chunk::kChunkDepth};
+    m_BlockObjs[index(x,y,z)] = Block(type, worldSpaceCoords);
 }
 
 void Chunk::generateMesh() {
@@ -56,9 +58,9 @@ void Chunk::generateMesh() {
                     }*/
 
                     // Find neighbor coords
-                    int nx = x + neighborOffsets[faceIndex].x;
-                    int ny = y + neighborOffsets[faceIndex].y;
-                    int nz = z + neighborOffsets[faceIndex].z;
+                    int nx = m_Position.x + x + neighborOffsets[faceIndex].x;
+                    int ny = m_Position.y + y + neighborOffsets[faceIndex].y;
+                    int nz = m_Position.z + z + neighborOffsets[faceIndex].z;
 
                     // Determine if neighbor is in bounds:
                     bool neighborInRange = (nx >= 0 && nx < kChunkWidth &&

@@ -3,7 +3,6 @@
 
 #include <glm/glm.hpp>
 #include <functional>
-
 namespace std {
     template<>
     struct hash<glm::ivec3> {
