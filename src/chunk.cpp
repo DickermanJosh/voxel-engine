@@ -19,7 +19,7 @@ void Chunk::setBlock(int x, int y, int z, BlockType type) {
         return;
     }
 
-    glm::vec3 worldSpaceCoords = {x * Chunk::kChunkWidth, y * Chunk::kChunkHeight, z * Chunk::kChunkDepth};
+    glm::vec3 worldSpaceCoords = {x + m_Position.x, y + m_Position.y, z + m_Position.z};
     m_BlockObjs[index(x,y,z)] = Block(type, worldSpaceCoords);
 }
 
@@ -58,9 +58,9 @@ void Chunk::generateMesh() {
                     }*/
 
                     // Find neighbor coords
-                    int nx = m_Position.x + x + neighborOffsets[faceIndex].x;
-                    int ny = m_Position.y + y + neighborOffsets[faceIndex].y;
-                    int nz = m_Position.z + z + neighborOffsets[faceIndex].z;
+                    int nx = x + neighborOffsets[faceIndex].x;
+                    int ny = y + neighborOffsets[faceIndex].y;
+                    int nz = z + neighborOffsets[faceIndex].z;
 
                     // Determine if neighbor is in bounds:
                     bool neighborInRange = (nx >= 0 && nx < kChunkWidth &&

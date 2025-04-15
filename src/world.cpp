@@ -9,8 +9,14 @@ World::World(uint64_t seed)
     std::cout << "World init with seed: " << seed << std::endl;
     Chunk* c1 = getChunk(0, 0, 0);
     Chunk* c2 = getChunk(1, 0, 0);
+    Chunk* c3 = getChunk(-1, 0, 0);
+    Chunk* c4 = getChunk(0, 0, 1);
+    Chunk* c5 = getChunk(0, 0, -1);
     c1->generateMesh();
     c2->generateMesh();
+    c3->generateMesh();
+    c4->generateMesh();
+    c5->generateMesh();
 };
 
 void World::update(Camera& camera, float dt) {
