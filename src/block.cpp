@@ -35,18 +35,18 @@ void Block::defineRenderedFaces(MeshPack& pack, const std::vector<bool>& visible
         auto [tileX, tileY] = getFaceTile(type, face);
 
         // Copy base geometry & shift UVs
-        m_FaceData = remapFaceUV(baseFaceVertices[face], tileX, tileY);
+        std::vector<float>faceData = remapFaceUV(baseFaceVertices[face], tileX, tileY);
 
         // Offset the face by the block's position
-        for (size_t i = 0; i < m_FaceData.size(); i += 5) {
-            m_FaceData[i + 0] += m_Position.x; // X
-            m_FaceData[i + 1] += m_Position.y; // Y
-            m_FaceData[i + 2] += m_Position.z; // Z
+        for (size_t i = 0; i < faceData.size(); i += 5) {
+            faceData[i + 0] += m_Position.x; // X
+            faceData[i + 1] += m_Position.y; // Y
+            faceData[i + 2] += m_Position.z; // Z
         }
 
         // Insert into global arrays
         int idxOffset = pack.vertices.size() / 5;
-        pack.vertices.insert(pack.vertices.end(), m_FaceData.begin(), m_FaceData.end());
+        pack.vertices.insert(pack.vertices.end(), faceData.begin(), faceData.end());
 
         for (auto idx : baseFaceIndices) {
             pack.indices.push_back(idxOffset + idx);

@@ -12,15 +12,15 @@ class Chunk {
         inline static constexpr int kChunkWidth = 16;
         inline static constexpr int kChunkHeight = 16;
         inline static constexpr int kChunkDepth = 16;
+
         // Offsets for neighbor cells in the order of faces:
-        // 0: -Z, 1: +Z, 2: -X, 3: +X, 4: -Y, 5: +Y
         inline static constexpr glm::ivec3 neighborOffsets[6] = {
-            { 0,  0, -1},
-            { 0,  0,  1},
-            {-1,  0,  0},
-            { 1,  0,  0},
-            { 0, -1,  0},
-            { 0,  1,  0}
+            { 0,  0, -1}, // -z
+            { 0,  0,  1}, // +z
+            {-1,  0,  0}, // -x
+            { 1,  0,  0}, // +x
+            { 0, -1,  0}, // -y
+            { 0,  1,  0}  // +y
         };
     public:
         void setBlock(int x, int y, int z, BlockType type);

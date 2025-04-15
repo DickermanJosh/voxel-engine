@@ -45,6 +45,10 @@ void Camera::processKeyboard(bool* keys, float deltaTime) {
     }
 
     if (keys[sf::Keyboard::LShift]) {
+        m_Position -= m_Up * velocity;
+    }
+
+    if (keys[sf::Keyboard::LControl]) {
         m_MovementSpeed = SPRINT_MOVE_SPEED;
     } else {
         m_MovementSpeed = BASE_MOVE_SPEED;

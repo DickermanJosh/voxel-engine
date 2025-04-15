@@ -1,28 +1,13 @@
 #include "Chunk.hpp"
+#include <iostream>
 
 Chunk::Chunk(const glm::vec3& pos)
     : m_Position(pos),
       m_Blocks((kChunkWidth * kChunkHeight * kChunkDepth), BlockType::Air), // default everything to BlockType::Air
       m_BlockObjs((kChunkWidth * kChunkHeight * kChunkDepth)), // default everything with std::optional
       m_Mesh({}) {
-    // basic testing
-    for (int y = 0; y < kChunkHeight; ++y) {
-        for (int z = 0; z < kChunkDepth; ++z) {
-            for (int x = 0; x < kChunkWidth; ++x) {
-                if (y < kChunkHeight - 1) {
-                    m_Blocks[index(x,y,z)] = BlockType::Stone;
-                    m_BlockObjs[index(x,y,z)] = Block(BlockType::Stone, glm::vec3(x,y,z));
-                } else if (y == kChunkHeight - 1) {
-                    m_Blocks[index(x,y,z)] = BlockType::Grass;
-                    m_BlockObjs[index(x,y,z)] = Block(BlockType::Grass, glm::vec3(x,y,z));
-                } else {
-                    m_Blocks[index(x,y,z)] = BlockType::Air;
-                }
-            }
-        }
-    }
 
-    generateMesh();
+    // generateMesh();
 }
 
 void Chunk::setBlock(int x, int y, int z, BlockType type) {
@@ -37,11 +22,12 @@ void Chunk::setBlock(int x, int y, int z, BlockType type) {
 }
 
 void Chunk::generateMesh() {
-    m_MeshPack.vertices.clear();
-    m_MeshPack.indices.clear();
+    // m_MeshPack.vertices.clear();
+    // m_MeshPack.indices.clear();
+    MeshPack pack;
 
-    m_MeshPack.vertices.reserve(kChunkWidth * kChunkHeight * kChunkDepth * 6 * 4 * 5); // Rough upper bound
-    m_MeshPack.indices.reserve(kChunkWidth * kChunkHeight * kChunkDepth * 6 * 6);
+    pack.vertices.reserve(kChunkWidth * kChunkHeight * kChunkDepth * 6 * 4 * 5); // Rough upper bound
+    pack.indices.reserve(kChunkWidth * kChunkHeight * kChunkDepth * 6 * 6);
 
     //fetch face indices once from Block:
     const std::vector<unsigned int>& faceIndices = Block::getFaceIndices();
@@ -60,6 +46,14 @@ void Chunk::generateMesh() {
 
                 // For each face:
                 for (int faceIndex = 0; faceIndex < 6; ++faceIndex) {
+
+                    /*if (faceIndex != 5) {
+                        visibleFaces.push_back(false);
+                        continue;
+                    } else {
+                        visibleFaces.push_back(true);
+                        continue;
+                    }*/
 
                     // Find neighbor coords
                     int nx = x + neighborOffsets[faceIndex].x;
@@ -87,14 +81,17 @@ void Chunk::generateMesh() {
                 }
 
                 std::optional<Block> b = getBlockObj(x, y, z);
-                b->defineRenderedFaces(m_MeshPack, visibleFaces);
+                b->defineRenderedFaces(pack, visibleFaces);
             }
         }
     }
 
     // Upload to the GPU as one big mesh
-    m_Mesh = Mesh(m_MeshPack);
+    m_Mesh = Mesh(pack);
     m_Mesh.setupMesh();
+
+    std::cout << "Vertices: " << pack.vertices.size() << std::endl;
+    std::cout << "Indices: " << pack.indices.size() << std::endl;
 }
 
 void Chunk::draw() const {

@@ -7,10 +7,11 @@
 World::World(uint64_t seed) 
     : m_Seed(seed), m_ChunkGenerator(seed) {
     std::cout << "World init with seed: " << seed << std::endl;
+    getChunk(0, 0, 0);
 };
 
 void World::update(Camera& camera, float dt) {
-    glm::vec3 pos = camera.getPosition();
+    /*glm::vec3 pos = camera.getPosition();
 
     glm::ivec3 playerChunk = glm::floor(pos / glm::vec3(Chunk::kChunkWidth,
                 Chunk::kChunkHeight,
@@ -40,7 +41,7 @@ void World::update(Camera& camera, float dt) {
         } else {
             ++it;
         }
-    }
+    }*/
 }
 
 Chunk* World::getChunk(int cx, int cy, int cz) {

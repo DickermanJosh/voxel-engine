@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 #include <MeshPack.hpp>
 
-class Mesh {
+struct Mesh {
     public:
         void draw() const;
         void setupMesh();

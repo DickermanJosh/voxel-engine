@@ -82,6 +82,7 @@ Application::~Application() {
 void Application::run() {
     std::cout << "[Application] run() starting..." << std::endl;
 
+    m_World->update(*m_Camera.get(), 0.0f);
     while (m_Window.isOpen()) {
         float currentFrame = m_Clock.getElapsedTime().asSeconds();
         float deltaTime = currentFrame - m_LastFrame;
@@ -102,7 +103,7 @@ void Application::processEvents() {
 
 void Application::update(float deltaTime) {
     m_CameraController->update(deltaTime);
-    m_World->update(*m_Camera.get(), deltaTime);
+    //m_World->update(*m_Camera.get(), deltaTime);
 }
 
 void Application::render(float deltaTime) {
@@ -141,7 +142,7 @@ void Application::render(float deltaTime) {
 void Application::updateOverlay(float deltaTime) {
     m_FrameCount++;
     m_FpsTimer += deltaTime;
-    if (m_FpsTimer >= 0.5f) {
+    if (m_FpsTimer >= 0.1f) {
         m_CurrentFPS = static_cast<float>(m_FrameCount) / m_FpsTimer;
         m_fpsText.setString("FPS: " + std::to_string(static_cast<int>(m_CurrentFPS)));
 

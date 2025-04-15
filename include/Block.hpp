@@ -91,7 +91,7 @@ class Block {
 
     protected:
         glm::vec3 m_Position;
-        std::vector<float> m_FaceData;
+        // std::vector<float> m_FaceData;
 };
 
 #endif // BLOCK_HPP
