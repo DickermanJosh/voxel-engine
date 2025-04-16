@@ -18,7 +18,8 @@ class World {
         Player* getPlayer();
         void update(float dt);
         void draw();
-        glm::ivec3 worldToChunkCoords(const glm::vec3& position);
+        glm::ivec3 worldToChunkCoords(const glm::vec3& position) const;
+        BlockType getBlockAtWorld(int wx, int wy, int wz) const;
 
         World(uint64_t seed);
         ~World() = default;

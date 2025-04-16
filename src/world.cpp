@@ -12,7 +12,7 @@ World::World(uint64_t seed)
         for (int dy = -VIEW_DISTANCE; dy <= VIEW_DISTANCE; ++dy) {
             for (int dz = -VIEW_DISTANCE; dz <= VIEW_DISTANCE; ++dz) {
                 Chunk* c = getChunk(dx, dy, dz);
-                c->generateMesh();
+                if (c != nullptr) c->generateMesh();
             }
         }
     }
@@ -32,13 +32,22 @@ Chunk* World::getChunk(int cx, int cy, int cz) {
     }
 
     // Determine if the chunk is in view range before generating it
-    glm::ivec3 camPos = worldToChunkCoords(m_Player.getPosition());
+    /*glm::ivec3 camPos = worldToChunkCoords(m_Player.getPosition());
+    if (
+            (camPos.x + VIEW_DISTANCE > cx || camPos.x - VIEW_DISTANCE < cx) ||
+            (camPos.y + VIEW_DISTANCE > cy || camPos.y - VIEW_DISTANCE < cy) ||
+            (camPos.z + VIEW_DISTANCE > cz || camPos.z - VIEW_DISTANCE < cz)
+       ) {
+
+        return nullptr;
+    }*/
 
     // Create & generate a new Chunk
     std::unique_ptr<Chunk> newChunk = std::make_unique<Chunk>(
-        glm::vec3(cx * Chunk::kChunkWidth,
-                  cy * Chunk::kChunkHeight,
-                  cz * Chunk::kChunkDepth));
+            this,
+            glm::vec3(cx * Chunk::kChunkWidth,
+                cy * Chunk::kChunkHeight,
+                cz * Chunk::kChunkDepth));
 
     // Generate chunk blocks based on noise:
     // TODO: create a new one with m_Seed in the header. For :
@@ -51,7 +60,7 @@ Chunk* World::getChunk(int cx, int cy, int cz) {
     return chunkPtr;
 }
 
-glm::ivec3 World::worldToChunkCoords(const glm::vec3& position) {
+glm::ivec3 World::worldToChunkCoords(const glm::vec3& position) const {
     return glm::floor(position / glm::vec3(
                 static_cast<float>(Chunk::kChunkWidth),
                 static_cast<float>(Chunk::kChunkHeight),
@@ -68,4 +77,18 @@ void World::draw() {
 
 Player* World::getPlayer() {
     return &m_Player;
+}
+
+BlockType World::getBlockAtWorld(int wx, int wy, int wz) const {
+    glm::ivec3 chunkCoords = worldToChunkCoords(glm::vec3(wx, wy, wz));
+    auto it = m_Chunks.find(chunkCoords);
+    if (it == m_Chunks.end()) return BlockType::Air;
+
+    glm::ivec3 localCoords = {
+        wx - chunkCoords.x * Chunk::kChunkWidth,
+        wy - chunkCoords.y * Chunk::kChunkHeight,
+        wz - chunkCoords.z * Chunk::kChunkDepth
+    };
+
+    return it->second->getBlock(localCoords.x, localCoords.y, localCoords.z);
 }

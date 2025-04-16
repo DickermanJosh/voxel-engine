@@ -6,6 +6,7 @@
 #include <optional>
 #include "Mesh.hpp"
 #include "Block.hpp"
+class World;
 
 class Chunk {
     public:
@@ -24,10 +25,11 @@ class Chunk {
         };
     public:
         void setBlock(int x, int y, int z, BlockType type);
+        BlockType getBlock(int x, int y, int z) const;
         void generateMesh();
         void draw() const;
 
-        Chunk(const glm::vec3& position);
+        Chunk(World* world, const glm::vec3& position);
         virtual ~Chunk() = default;
 
     private:
@@ -37,7 +39,8 @@ class Chunk {
         Mesh m_Mesh;
         MeshPack m_MeshPack;
     private:
-        BlockType getBlock(int x, int y, int z) const;
+        World* m_World;
+        bool m_OnlyAir = true;
         std::optional<Block> getBlockObj(int x, int y, int z) const;
         void determineVisibleFacesInChunk();
         bool isBlockActive(int x, int y, int z) const; // Helper that returns whether a block at (x,y,z) is a rendered type or air

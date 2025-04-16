@@ -1,5 +1,6 @@
 #include "ChunkGenerator.hpp"
 
+// TODO: Figure out a better way to streamline air-chunk creation w/o creating chunk obj first
 void ChunkGenerator::populateChunk(Chunk& chunk, int cx, int cy, int cz)
 {
     // std::cout << "Populating chunk at " << cx << ", " << cy << ", " << cz << std::endl;
@@ -43,7 +44,5 @@ void ChunkGenerator::populateChunk(Chunk& chunk, int cx, int cy, int cz)
             }
         }
     }
-
-    // chunk.generateMesh();
 }
 
