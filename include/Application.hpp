@@ -16,9 +16,6 @@
 
 #include "World.hpp"
 #include "ShaderProgram.hpp"
-#include "Camera.hpp"
-#include "CameraController.hpp"
-#include "EventHandler.hpp"
 
 #include <memory>
 
@@ -45,9 +42,9 @@ class Application {
         GLuint m_TextureAtlas;
 
         std::unique_ptr<World> m_World;
-        std::unique_ptr<Camera> m_Camera;
-        std::unique_ptr<CameraController> m_CameraController;
-        EventHandler m_EventHandler;
+        //std::unique_ptr<Camera> m_Camera;
+        //std::unique_ptr<CameraController> m_CameraController;
+        //EventHandler m_EventHandler;
     private:
         void processEvents();
         void update(float dt);

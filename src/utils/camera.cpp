@@ -1,5 +1,11 @@
 #include "Camera.hpp"
 
+Camera::Camera(glm::vec3 position)
+    : m_Position(position), m_WorldUp(glm::vec3(0.0f, 1.0f, 0.0f)), m_Yaw(-90.0f), m_Pitch(0.0f),
+      m_MovementSpeed(BASE_MOVE_SPEED), m_MouseSensitivity(0.1f) {
+    updateCameraVectorsInternal();
+}
+
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     : m_Position(position), m_WorldUp(up), m_Yaw(yaw), m_Pitch(pitch),
       m_MovementSpeed(BASE_MOVE_SPEED), m_MouseSensitivity(0.1f) {

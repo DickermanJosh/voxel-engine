@@ -54,7 +54,7 @@ void Chunk::generateMesh() {
                     bool neighborInRange = (nx >= 0 && nx < kChunkWidth &&
                             ny >= 0 && ny < kChunkHeight &&
                             nz >= 0 && nz < kChunkDepth);
-
+                    
                     // TODO: Cull faces in between chunks
                     // Ask world for chunk in dir we are facing
                     // if it exists translate the pos to find the neighboring block and see its state
@@ -62,6 +62,12 @@ void Chunk::generateMesh() {
                     // if not in render distance set face to visible
                     if (!neighborInRange) {
                         visibleFaces.push_back(true);
+                        // Determine which chunk we are trying to look at
+                        glm::vec3 nPos(
+                                m_Position.x + neighborOffsets[faceIndex].x,
+                                m_Position.y + neighborOffsets[faceIndex].y,
+                                m_Position.z + neighborOffsets[faceIndex].z);
+
                         continue;
                     }
 

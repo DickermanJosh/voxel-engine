@@ -4,7 +4,7 @@
 #include "Chunk.hpp"
 #include "ChunkGenerator.hpp"
 #include "HashUtils.hpp"
-#include "Camera.hpp"
+#include "Player.hpp"
 
 #include <cstdint>
 #include <unordered_map>
@@ -12,11 +12,13 @@
 
 class World {
     public:
-        static constexpr int VIEW_DISTANCE = 15; // Chunk units
+        static constexpr int VIEW_DISTANCE = 5; // Chunk units
     public:
         Chunk* getChunk(int cx, int cy, int cz);
-        void update(Camera& camera, float dt);
+        Player* getPlayer();
+        void update(float dt);
         void draw();
+        glm::ivec3 worldToChunkCoords(const glm::vec3& position);
 
         World(uint64_t seed);
         ~World() = default;
@@ -24,6 +26,7 @@ class World {
         uint64_t m_Seed;
         ChunkGenerator m_ChunkGenerator;
         std::unordered_map<glm::ivec3, std::unique_ptr<Chunk>> m_Chunks; // Current chunks loaded in memory
+        Player m_Player;
 };
 
 #endif // WORLD_HPP

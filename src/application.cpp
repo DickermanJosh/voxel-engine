@@ -66,13 +66,13 @@ Application::Application()
     m_World = std::make_unique<World>(rand_seed);
 
     // Camera Setup
-    glm::vec3 cameraPos = glm::vec3(0.0f, 1.0f, 3.0f);
+    /*glm::vec3 cameraPos = glm::vec3(0.0f, 1.0f, 3.0f);
     glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
     m_Camera = std::make_unique<Camera>(cameraPos, cameraUp, -90.0f, 0.0f);
     m_CameraController = std::make_unique<CameraController>(*m_Camera);
 
     // Event Handler, currently only set up to handle camera inputs
-    m_EventHandler.addEventListener(m_CameraController.get());
+    m_EventHandler.addEventListener(m_CameraController.get()); */
 }
 
 Application::~Application() {
@@ -82,7 +82,7 @@ Application::~Application() {
 void Application::run() {
     std::cout << "[Application] run() starting..." << std::endl;
 
-    m_World->update(*m_Camera.get(), 0.0f);
+    m_World->update(0.0f);
     while (m_Window.isOpen()) {
         float currentFrame = m_Clock.getElapsedTime().asSeconds();
         float deltaTime = currentFrame - m_LastFrame;
@@ -97,12 +97,13 @@ void Application::run() {
 void Application::processEvents() {
     sf::Vector2u size = m_Window.getSize();
     sf::Vector2i center(size.x / 2, size.y / 2);
-    m_EventHandler.processEvents(m_Window);
+    m_World->getPlayer()->getEventHandler()->processEvents(m_Window);
     sf::Mouse::setPosition(center, m_Window);
 }
 
 void Application::update(float deltaTime) {
-    m_CameraController->update(deltaTime);
+    // m_CameraController->update(deltaTime);
+    m_World->update(deltaTime);
     //m_World->update(*m_Camera.get(), deltaTime);
 }
 
@@ -113,9 +114,10 @@ void Application::render(float deltaTime) {
 
     m_ShaderProgram->use();
 
+    Camera* cam = m_World->getPlayer()->getCamera();
     float aspect = static_cast<float>(m_Window.getSize().x) / m_Window.getSize().y;
-    glm::mat4 projection = m_Camera->getProjectionMatrix(aspect);
-    glm::mat4 view = m_Camera->getViewMatrix();
+    glm::mat4 projection = cam->getProjectionMatrix(aspect);
+    glm::mat4 view = cam->getViewMatrix();
 
     m_ShaderProgram->setUniform("projection", projection);
     m_ShaderProgram->setUniform("view", view);
@@ -146,7 +148,7 @@ void Application::updateOverlay(float deltaTime) {
         m_CurrentFPS = static_cast<float>(m_FrameCount) / m_FpsTimer;
         m_fpsText.setString("FPS: " + std::to_string(static_cast<int>(m_CurrentFPS)));
 
-        glm::vec3 pos = m_Camera->getPosition();
+        glm::vec3 pos = m_World->getPlayer()->getPosition();
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(2)
             << "\nx: " << pos.x

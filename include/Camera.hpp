@@ -16,6 +16,7 @@ class Camera {
         void processKeyboard(bool* keys, float deltaTime);
         void processMouseMovement(float xoffset, float yoffset);
 
+        Camera(glm::vec3 position); // will use default up, yaw, pitch
         Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch);
         ~Camera();
 
