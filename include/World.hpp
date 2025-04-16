@@ -19,7 +19,7 @@ class World {
         void update(float dt);
         void draw();
         glm::ivec3 worldToChunkCoords(const glm::vec3& position) const;
-        BlockType getBlockAtWorld(int wx, int wy, int wz) const;
+        BlockType getBlockAtWorld(const glm::ivec3& worldPos) const;
 
         World(uint64_t seed);
         ~World() = default;

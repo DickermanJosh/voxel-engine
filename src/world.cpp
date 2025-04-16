@@ -12,9 +12,12 @@ World::World(uint64_t seed)
         for (int dy = -VIEW_DISTANCE; dy <= VIEW_DISTANCE; ++dy) {
             for (int dz = -VIEW_DISTANCE; dz <= VIEW_DISTANCE; ++dz) {
                 Chunk* c = getChunk(dx, dy, dz);
-                if (c != nullptr) c->generateMesh();
             }
         }
+    }
+
+    for (auto& [coords, chunk] : m_Chunks) {
+        chunk->generateMesh();
     }
 };
 
@@ -30,17 +33,6 @@ Chunk* World::getChunk(int cx, int cy, int cz) {
         // Already exists
         return it->second.get();
     }
-
-    // Determine if the chunk is in view range before generating it
-    /*glm::ivec3 camPos = worldToChunkCoords(m_Player.getPosition());
-    if (
-            (camPos.x + VIEW_DISTANCE > cx || camPos.x - VIEW_DISTANCE < cx) ||
-            (camPos.y + VIEW_DISTANCE > cy || camPos.y - VIEW_DISTANCE < cy) ||
-            (camPos.z + VIEW_DISTANCE > cz || camPos.z - VIEW_DISTANCE < cz)
-       ) {
-
-        return nullptr;
-    }*/
 
     // Create & generate a new Chunk
     std::unique_ptr<Chunk> newChunk = std::make_unique<Chunk>(
@@ -79,15 +71,15 @@ Player* World::getPlayer() {
     return &m_Player;
 }
 
-BlockType World::getBlockAtWorld(int wx, int wy, int wz) const {
-    glm::ivec3 chunkCoords = worldToChunkCoords(glm::vec3(wx, wy, wz));
+BlockType World::getBlockAtWorld(const glm::ivec3& pos) const {
+    glm::ivec3 chunkCoords = worldToChunkCoords(glm::vec3(pos.x, pos.y, pos.z));
     auto it = m_Chunks.find(chunkCoords);
     if (it == m_Chunks.end()) return BlockType::Air;
 
     glm::ivec3 localCoords = {
-        wx - chunkCoords.x * Chunk::kChunkWidth,
-        wy - chunkCoords.y * Chunk::kChunkHeight,
-        wz - chunkCoords.z * Chunk::kChunkDepth
+        pos.x - chunkCoords.x * Chunk::kChunkWidth,
+        pos.y - chunkCoords.y * Chunk::kChunkHeight,
+        pos.z - chunkCoords.z * Chunk::kChunkDepth
     };
 
     return it->second->getBlock(localCoords.x, localCoords.y, localCoords.z);

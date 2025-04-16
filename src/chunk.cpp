@@ -61,12 +61,13 @@ void Chunk::generateMesh() {
                             nz >= 0 && nz < kChunkDepth);
                     
                     if (!neighborInRange) {
-                        glm::vec3 worldPos(
-                                x + m_Position.x + neighborOffsets[faceIndex].x,
-                                y + m_Position.y + neighborOffsets[faceIndex].y,
-                                z + m_Position.z + neighborOffsets[faceIndex].z);
+                        glm::ivec3 worldPos(
+                                static_cast<int>(m_Position.x) + x + neighborOffsets[faceIndex].x,
+                                static_cast<int>(m_Position.y) + y + neighborOffsets[faceIndex].y,
+                                static_cast<int>(m_Position.z) + z + neighborOffsets[faceIndex].z
+                                );
 
-                        BlockType neighbor = m_World->getBlockAtWorld(worldPos.x, worldPos.y, worldPos.z);
+                        BlockType neighbor = m_World->getBlockAtWorld(worldPos);
 
                         if (neighbor != BlockType::Air) {
                             visibleFaces.push_back(false);
@@ -106,10 +107,16 @@ void Chunk::draw() const {
 }
 
 BlockType Chunk::getBlock(int x, int y, int z) const {
+    assert(x >= 0 && x < kChunkWidth);
+    assert(y >= 0 && y < kChunkHeight);
+    assert(z >= 0 && z < kChunkDepth);
     return m_Blocks[index(x, y, z)];
 }
 
 std::optional<Block> Chunk::getBlockObj(int x, int y, int z) const {
+    assert(x >= 0 && x < kChunkWidth);
+    assert(y >= 0 && y < kChunkHeight);
+    assert(z >= 0 && z < kChunkDepth);
     return m_BlockObjs[index(x, y, z)];
 }
 
