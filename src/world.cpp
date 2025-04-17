@@ -4,14 +4,16 @@
 
 World::World(uint64_t seed) 
     : m_Seed(seed), 
-    m_ChunkGenerator(seed),
-    m_Player(glm::vec3(0.0f, 16.0f, 0.0f)) {
+    m_ChunkGenerator(this, seed),
+    m_Player(glm::vec3(0.0f, 116.0f, 0.0f)) {
     std::cout << "World init with seed: " << seed << std::endl;
+
+    glm::ivec3 pChunkPos = worldToChunkCoords(m_Player.getPosition());
 
     for (int dx = -VIEW_DISTANCE; dx <= VIEW_DISTANCE; ++dx) {
         for (int dy = -VIEW_DISTANCE; dy <= VIEW_DISTANCE; ++dy) {
             for (int dz = -VIEW_DISTANCE; dz <= VIEW_DISTANCE; ++dz) {
-                Chunk* c = getChunk(dx, dy, dz);
+                getChunk(pChunkPos.x + dx, pChunkPos.y + dy, pChunkPos.z + dz);
             }
         }
     }
@@ -35,15 +37,15 @@ Chunk* World::getChunk(int cx, int cy, int cz) {
     }
 
     // Create & generate a new Chunk
-    std::unique_ptr<Chunk> newChunk = std::make_unique<Chunk>(
+    /*std::unique_ptr<Chunk> newChunk = std::make_unique<Chunk>(
             this,
             glm::vec3(cx * Chunk::kChunkWidth,
                 cy * Chunk::kChunkHeight,
-                cz * Chunk::kChunkDepth));
+                cz * Chunk::kChunkDepth)); */
 
     // Generate chunk blocks based on noise:
-    // TODO: create a new one with m_Seed in the header. For :
-    m_ChunkGenerator.populateChunk(*newChunk, cx, cy, cz);
+    // m_ChunkGenerator.populateChunk(*newChunk, cx, cy, cz);
+    std::unique_ptr<Chunk> newChunk = m_ChunkGenerator.generateChunk(cx, cy, cz);
 
     // Store in the map
     Chunk* chunkPtr = newChunk.get();
