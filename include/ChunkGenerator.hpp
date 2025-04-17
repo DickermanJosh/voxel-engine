@@ -20,7 +20,7 @@ private:
     // Generate the blocks in the chunk, based on chunk coords (cx, cy, cz)
     std::unique_ptr<Chunk> populateChunk(int cx, int cy, int cz);
     // Will instantiate a chunk if std::unique_ptr<Chunk>& chunk == nullptr. Sets the block at that chunks local coords
-    void setBlockAtChunkPos(std::unique_ptr<Chunk>& chunk, BlockType block, int cx, int cy, int cz);
+    void setBlockAtChunkPos(std::unique_ptr<Chunk>& chunk, BlockType block, int chunkX, int chunkY, int chunkZ, int localX, int localY, int localZ);
     siv::PerlinNoise m_PerlinNoise;
 };
 

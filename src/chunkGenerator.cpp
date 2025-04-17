@@ -1,19 +1,25 @@
 #include "ChunkGenerator.hpp"
 
 std::unique_ptr<Chunk> ChunkGenerator::generateChunk(int cx, int cy, int cz) {
+    // populate stone canvas
     auto chunk = populateChunk(cx, cy, cz);
-
+    // TODO (in order)
+    // add water
+    // carve caves
+    // add decorations
+    // add mobs
     return chunk;
 }
 
-// TODO: Figure out a better way to streamline air-chunk creation w/o creating chunk obj first
 std::unique_ptr<Chunk> ChunkGenerator::populateChunk(int cx, int cy, int cz)
 {
+    // allocate an empty chunk pointer, only create a chunk object if a block gets added to it
     std::unique_ptr<Chunk> chunk = nullptr;
     // std::cout << "Populating chunk at " << cx << ", " << cy << ", " << cz << std::endl;
     float worldOffsetX = cx * Chunk::kChunkWidth;
     float worldOffsetY = cy * Chunk::kChunkHeight;
     float worldOffsetZ = cz * Chunk::kChunkDepth;
+
     for (int z = 0; z < Chunk::kChunkDepth; ++z) {
         float worldZ = worldOffsetZ + z;
         for (int x = 0; x < Chunk::kChunkWidth; ++x) {
@@ -33,31 +39,33 @@ std::unique_ptr<Chunk> ChunkGenerator::populateChunk(int cx, int cy, int cz)
                 float worldY = worldOffsetY + y;
 
                 if (worldY < terrainHeight - 4) {
-                    setBlockAtChunkPos(chunk, BlockType::Stone, x, y, z);
+                    setBlockAtChunkPos(chunk, BlockType::Stone, cx, cy, cz, x, y, z);
                 } else if (worldY < terrainHeight - 1) {
-                    setBlockAtChunkPos(chunk, BlockType::Dirt, x, y, z);
+                    setBlockAtChunkPos(chunk, BlockType::Dirt, cx, cy, cz, x, y, z);
                 } else if (std::abs(worldY - terrainHeight) < 0.1f) {
-                    setBlockAtChunkPos(chunk, BlockType::Grass, x, y, z);
+                    setBlockAtChunkPos(chunk, BlockType::Grass, cx, cy, cz, x, y, z);
                 } else {
                     if (chunk != nullptr) chunk->setBlock(x, y, z, BlockType::Air);
                 }
             }
         }
     }
+
     return chunk;
 }
 
-void ChunkGenerator::setBlockAtChunkPos(std::unique_ptr<Chunk>& chunk, BlockType block, int cx, int cy, int cz) {
-    if (chunk != nullptr) {
-        chunk->setBlock(cx, cy, cz, block);
-        return;
+void ChunkGenerator::setBlockAtChunkPos(std::unique_ptr<Chunk>& chunk,
+        BlockType block,
+        int chunkX, int chunkY, int chunkZ,
+        int localX, int localY, int localZ) {
+    if (!chunk) {
+        chunk = std::make_unique<Chunk>(
+                m_World,
+                glm::vec3(chunkX * Chunk::kChunkWidth,
+                    chunkY * Chunk::kChunkHeight,
+                    chunkZ * Chunk::kChunkDepth));
     }
 
-    chunk = std::make_unique<Chunk>(
-            m_World,
-            glm::vec3(cx * Chunk::kChunkWidth,
-                cy * Chunk::kChunkHeight,
-                cz * Chunk::kChunkDepth));
-
-    chunk->setBlock(cx, cy, cz, block);
+    chunk->setBlock(localX, localY, localZ, block);
 }
+

@@ -6,13 +6,15 @@
 #include "HashUtils.hpp"
 #include "Player.hpp"
 
-#include <cstdint>
 #include <unordered_map>
+#include <unordered_set>
+#include <cstdint>
 #include <memory>
+#include <queue>
 
 class World {
     public:
-        static constexpr int VIEW_DISTANCE = 5; // Chunk units
+        static constexpr int VIEW_DISTANCE = 15; // Chunk units
     public:
         Chunk* getChunk(int cx, int cy, int cz);
         Player* getPlayer();
@@ -26,7 +28,12 @@ class World {
     private:
         uint64_t m_Seed;
         ChunkGenerator m_ChunkGenerator;
+        std::queue<glm::ivec3> m_ChunkGenQueue;
+        std::unordered_set<glm::ivec3> m_QueuedChunks;
+        std::queue<glm::ivec3> m_ChunkMeshGenerationQueue;
+        std::unordered_set<glm::ivec3> m_QueuedMeshGenChunks;
         std::unordered_map<glm::ivec3, std::unique_ptr<Chunk>> m_Chunks; // Current chunks loaded in memory
+        std::vector<glm::ivec3> m_AirChunks; // List the chunks found containing only air so we don't try to re-load them
         Player m_Player;
 };
 
