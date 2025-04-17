@@ -45,7 +45,8 @@ Chunk* World::getChunk(int cx, int cy, int cz) {
 
     // Generate chunk blocks based on noise:
     // m_ChunkGenerator.populateChunk(*newChunk, cx, cy, cz);
-    std::unique_ptr<Chunk> newChunk = m_ChunkGenerator.generateChunk(cx, cy, cz);
+    auto newChunk = m_ChunkGenerator.generateChunk(cx, cy, cz);
+    if (newChunk == nullptr) return nullptr;
 
     // Store in the map
     Chunk* chunkPtr = newChunk.get();
