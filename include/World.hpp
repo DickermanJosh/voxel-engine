@@ -16,12 +16,11 @@ class World {
     public:
         static constexpr int VIEW_DISTANCE = 15; // Chunk units
     public:
+        BlockType getBlockAtWorld(const glm::ivec3& worldPos) const;
         Chunk* getChunk(int cx, int cy, int cz);
         Player* getPlayer();
         void update(float dt);
         void draw();
-        glm::ivec3 worldToChunkCoords(const glm::vec3& position) const;
-        BlockType getBlockAtWorld(const glm::ivec3& worldPos) const;
 
         World(uint64_t seed);
         ~World() = default;
@@ -35,6 +34,10 @@ class World {
         std::unordered_map<glm::ivec3, std::unique_ptr<Chunk>> m_Chunks; // Current chunks loaded in memory
         std::vector<glm::ivec3> m_AirChunks; // List the chunks found containing only air so we don't try to re-load them
         Player m_Player;
+        glm::ivec3 m_LastKnownPlayerChunk;
+    private:
+        glm::ivec3 worldToChunkCoords(const glm::vec3& position) const;
+        bool isChunkInView(const glm::ivec3& playerChunk, const glm::ivec3& chunkCoords) const;
 };
 
 #endif // WORLD_HPP
