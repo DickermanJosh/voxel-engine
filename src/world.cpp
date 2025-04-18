@@ -59,7 +59,7 @@ void World::update(float dt) {
             if (visibleNow.find(pos) != visibleNow.end()) {
                 newQueue.push(pos); // still valid
             } else {
-                m_QueuedChunks.erase(pos);
+                m_QueuedChunks.erase(pos); // not valid
             }
         }
         m_ChunkGenQueue = std::move(newQueue);
@@ -67,13 +67,13 @@ void World::update(float dt) {
         // Remove generated chunks outside view
         for (auto it = m_Chunks.begin(); it != m_Chunks.end();) {
             if (!isChunkInView(playerChunk, it->first)) {
-                it = m_Chunks.erase(it); // auto-deletes chunk due to unique_ptr
+                it = m_Chunks.erase(it);
             } else {
                 ++it;
             }
         }
 
-        // Optionally remove air chunks as well (if you cache lots)
+        // Remove old air chunks as well
         m_AirChunks.erase(std::remove_if(m_AirChunks.begin(), m_AirChunks.end(),
                     [&](const glm::ivec3& pos) {
                     return !isChunkInView(playerChunk, pos);
@@ -107,6 +107,11 @@ Chunk* World::getChunk(int cx, int cy, int cz) {
         return it->second.get();
     }
 
+    if (m_ChunkGenerator.isChunkEmpty(cx, cy, cz)) {
+        m_AirChunks.push_back(key);
+        return nullptr;
+    }
+
     // Create and generate a new chunk
     auto newChunk = m_ChunkGenerator.generateChunk(cx, cy, cz);
 
@@ -120,6 +125,22 @@ Chunk* World::getChunk(int cx, int cy, int cz) {
     Chunk* chunkPtr = newChunk.get();
     m_Chunks[key] = std::move(newChunk);
     // std::cout << "Chunks map size: "<< m_Chunks.size() << std::endl;
+
+    // Ask all neighboring chunks to re-check their meshing on the face
+    // facing toward this chunk
+    // Face indices: 0 = -Z, 1 = +Z, 2 = -X, 3 = +X, 4 = -Y, 5 = +Y
+    for (int face = 0; face < 6; ++face) {
+        glm::ivec3 offset = Chunk::neighborOffsets[face];
+        glm::ivec3 neighborPos = key + offset;
+
+        auto it = m_Chunks.find(neighborPos);
+        if (it != m_Chunks.end()) {
+            // Ask neighbor to re-check the face that borders this chunk
+            int oppositeFace = face ^ 1; // flip bit 0: 0 <-> 1, 2 <-> 3, 4 <-> 5
+            it->second->remeshFaceTowardsNeighbor(oppositeFace);
+        }
+    }
+
     return chunkPtr;
 }
 

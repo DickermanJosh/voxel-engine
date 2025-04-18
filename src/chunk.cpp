@@ -1,18 +1,27 @@
 #include "Chunk.hpp"
 #include "World.hpp"
 
-Chunk::Chunk(World* world, const glm::vec3& pos)
+Chunk::Chunk(World* world, const glm::vec3& pos, StorageMode mode)
     : m_World(world),
     m_Position(pos),
     m_Blocks((kChunkWidth * kChunkHeight * kChunkDepth), BlockType::Air), // default everything to BlockType::Air
     m_BlockObjs((kChunkWidth * kChunkHeight * kChunkDepth)), // default everything with std::optional
-    m_Mesh({}) {
-
+    m_Mesh({}), 
+    m_Mode(mode) {
         // std::cout << "Creating chunk @ pos: " << pos.x << ", " << pos.y << "," << pos.z << std::endl;
+        if (m_Mode == StorageMode::Dense) {
+            m_Blocks.resize(kChunkDepth * kChunkDepth * kChunkHeight, BlockType::Air);
+        } else {
+            m_Sparse = std::make_unique<SparseChunkData>();
+        }
     }
 
 void Chunk::setBlock(int x, int y, int z, BlockType type) {
-    m_Blocks[index(x,y,z)] = type;
+    if (m_Mode == StorageMode::Dense) {
+        m_Blocks[index(x,y,z)] = type;
+    } else {
+        m_Sparse->setBlock(x, y, z, type);
+    }
 
     if (type == BlockType::Air) {
         m_BlockObjs[index(x,y,z)] = std::nullopt;
@@ -30,6 +39,7 @@ void Chunk::generateMesh() {
 
     MeshPack pack;
 
+    // todo change to m_blocks.size() for test
     pack.vertices.reserve(kChunkWidth * kChunkHeight * kChunkDepth * 6 * 4 * 5); // Rough upper bound
     pack.indices.reserve(kChunkWidth * kChunkHeight * kChunkDepth * 6 * 6);
 
@@ -102,6 +112,11 @@ void Chunk::generateMesh() {
     // std::cout << "Indices: " << pack.indices.size() << std::endl;
 }
 
+void Chunk::remeshFaceTowardsNeighbor(int faceIndex) {
+    // TODO: Use a dirty face mask to only regenerate dirty faces
+    generateMesh();
+}
+
 void Chunk::draw() const {
     m_Mesh.draw();
 }
@@ -110,7 +125,12 @@ BlockType Chunk::getBlock(int x, int y, int z) const {
     assert(x >= 0 && x < kChunkWidth);
     assert(y >= 0 && y < kChunkHeight);
     assert(z >= 0 && z < kChunkDepth);
-    return m_Blocks[index(x, y, z)];
+
+    if (m_Mode == StorageMode::Dense) {
+        return m_Blocks[index(x, y, z)];
+    }
+
+    return m_Sparse->getBlock(x, y, z);
 }
 
 std::optional<Block> Chunk::getBlockObj(int x, int y, int z) const {
