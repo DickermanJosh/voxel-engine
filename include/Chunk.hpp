@@ -50,7 +50,7 @@ class Chunk {
         std::vector<std::optional<Block>> m_BlockObjs;
         std::unique_ptr<SparseChunkData> m_Sparse;
         Mesh m_Mesh;
-        MeshPack m_MeshPack;
+        std::array<MeshPack, 6> m_FaceMeshPacks;
         StorageMode m_Mode;
         World* m_World;
         bool m_OnlyAir = true;

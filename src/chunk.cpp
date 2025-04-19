@@ -37,92 +37,84 @@ void Chunk::setBlock(int x, int y, int z, BlockType type) {
 void Chunk::generateMesh() {
     if (m_OnlyAir) return;
 
-    MeshPack pack;
+    // Clear all face mesh packs
+    for (auto& facePack : m_FaceMeshPacks) {
+        facePack.vertices.clear();
+        facePack.indices.clear();
+    }
 
-    // todo change to m_blocks.size() for test
-    pack.vertices.reserve(kChunkWidth * kChunkHeight * kChunkDepth * 6 * 4 * 5); // Rough upper bound
-    pack.indices.reserve(kChunkWidth * kChunkHeight * kChunkDepth * 6 * 6);
-
-    //fetch face indices once from Block:
-    const std::vector<unsigned int>& faceIndices = Block::getFaceIndices();
-
-    // For each block in this chunk:
     for (int y = 0; y < kChunkHeight; ++y) {
         for (int z = 0; z < kChunkDepth; ++z) {
             for (int x = 0; x < kChunkWidth; ++x) {
-                BlockType blockType = getBlock(x,y,z);
-                if (blockType == BlockType::Air) {
-                    // Skip empty
-                    continue;
-                }
-
-                std::vector<bool> visibleFaces;
-
-                // For each face:
-                for (int faceIndex = 0; faceIndex < 6; ++faceIndex) {
-                    // Find neighbor coords
-                    int nx = x + neighborOffsets[faceIndex].x;
-                    int ny = y + neighborOffsets[faceIndex].y;
-                    int nz = z + neighborOffsets[faceIndex].z;
-
-                    // Determine if neighbor is in bounds:
-                    bool neighborInRange = (nx >= 0 && nx < kChunkWidth &&
-                            ny >= 0 && ny < kChunkHeight &&
-                            nz >= 0 && nz < kChunkDepth);
-                    
-                    if (!neighborInRange) {
-                        glm::ivec3 worldPos(
-                                static_cast<int>(m_Position.x) + x + neighborOffsets[faceIndex].x,
-                                static_cast<int>(m_Position.y) + y + neighborOffsets[faceIndex].y,
-                                static_cast<int>(m_Position.z) + z + neighborOffsets[faceIndex].z
-                                );
-
-                        BlockType neighbor = m_World->getBlockAtWorld(worldPos);
-
-                        if (neighbor != BlockType::Air) {
-                            visibleFaces.push_back(false);
-                        } else {
-                            visibleFaces.push_back(true);
-                        }
-
-                        continue;
-                    }
-
-                    // If neighbor is in range but type is BlockType::Air => face is visible
-                    // Otherwise, face is hidden
-                    if (getBlock(nx,ny,nz) != BlockType::Air) {
-                        visibleFaces.push_back(false);
-                        continue;
-                    }
-
-                    visibleFaces.push_back(true);
-                }
+                BlockType blockType = getBlock(x, y, z);
+                if (blockType == BlockType::Air) continue;
 
                 std::optional<Block> b = getBlockObj(x, y, z);
-                b->defineRenderedFaces(pack, visibleFaces);
+                if (!b.has_value()) continue;
+
+                for (int face = 0; face < 6; ++face) {
+                    int nx = x + neighborOffsets[face].x;
+                    int ny = y + neighborOffsets[face].y;
+                    int nz = z + neighborOffsets[face].z;
+
+                    bool neighborInRange = (nx >= 0 && ny >= 0 && nz >= 0 &&
+                                            nx < kChunkWidth && ny < kChunkHeight && nz < kChunkDepth);
+
+                    bool faceVisible = false;
+
+                    if (!neighborInRange) {
+                        glm::ivec3 worldPos = glm::ivec3(m_Position) + glm::ivec3(x, y, z) + neighborOffsets[face];
+                        Chunk* nChunk = m_World->getChunkAtWorld(worldPos);
+                        faceVisible = (nChunk == nullptr || m_World->getBlockAtWorld(worldPos) == BlockType::Air);
+                    } else {
+                        faceVisible = (getBlock(nx, ny, nz) == BlockType::Air);
+                    }
+
+                    if (faceVisible) {
+                        std::vector<bool> visible(6, false);
+                        visible[face] = true;
+
+                        int baseIndex = m_FaceMeshPacks[face].vertices.size() / 5;
+                        b->defineRenderedFaces(m_FaceMeshPacks[face], visible);
+                    }
+                }
             }
         }
     }
 
-    // Upload to the GPU as one big mesh
-    m_Mesh = Mesh(pack);
-    m_Mesh.setupMesh();
+    // Merge all face packs into the final mesh
+    MeshPack combined;
+    for (const auto& facePack : m_FaceMeshPacks) {
+        int indexOffset = combined.vertices.size() / 5;
+        combined.vertices.insert(combined.vertices.end(), facePack.vertices.begin(), facePack.vertices.end());
 
-    // std::cout << "Vertices: " << pack.vertices.size() << std::endl;
-    // std::cout << "Indices: " << pack.indices.size() << std::endl;
+        for (unsigned int idx : facePack.indices) {
+            combined.indices.push_back(idx + indexOffset);
+        }
+    }
+
+    m_Mesh = Mesh(combined);
+    m_Mesh.setupMesh();
+    m_DirtyFaces = 0;
 }
 
 void Chunk::remeshFaceTowardsNeighbor(int faceIndex) {
-    // TODO: Use a dirty face mask to only regenerate dirty faces
-    generateMesh();
+    assert(faceIndex <= 6 && faceIndex >= 0);
+    markFaceDirty(faceIndex);
+
+    // glm::ivec3 chunkCoords = glm::floor(m_Position / glm::vec3(kChunkWidth, kChunkHeight, kChunkDepth));
+    m_World->queueChunkForRemeshing(m_Position);
 }
 
 void Chunk::markFaceDirty(int faceIndex) {
+    assert(faceIndex <= 6 && faceIndex >= 0);
+    // m_DirtyFaces = 0b111111;
     m_DirtyFaces |= (1 << faceIndex);
 }
 
 void Chunk::markAllFacesDirty() {
     m_DirtyFaces = 0b111111;
+    assert(m_DirtyFaces == 6);
 }
 
 bool Chunk::hasDirtyFaces() const {
@@ -130,22 +122,21 @@ bool Chunk::hasDirtyFaces() const {
 }
 
 void Chunk::generateDirtyMesh() {
-    if (m_DirtyFaces == 0) return;
+for (int face = 0; face < 6; ++face) {
+        if (!(m_DirtyFaces & (1 << face)))
+            continue;
 
-    MeshPack newPack;
+        MeshPack& facePack = m_FaceMeshPacks[face];
+        facePack.vertices.clear();
+        facePack.indices.clear();
 
-    // Generate mesh only for dirty faces
-    for (int y = 0; y < kChunkHeight; y++) {
-        for (int z = 0; z < kChunkDepth; z++) {
-            for (int x = 0; x < kChunkWidth; x++) {
-                BlockType block = getBlock(x, y, z);
-                if (block == BlockType::Air) continue;
+        int faceVertexCount = 0;
 
-                std::vector<bool> visibleFaces(6, false);
-
-                for (int face = 0; face < 6; ++face) {
-                    if (!(m_DirtyFaces & (1 << face)))
-                        continue; // skip clean face
+        for (int y = 0; y < kChunkHeight; ++y) {
+            for (int z = 0; z < kChunkDepth; ++z) {
+                for (int x = 0; x < kChunkWidth; ++x) {
+                    BlockType block = getBlock(x, y, z);
+                    if (block == BlockType::Air) continue;
 
                     int nx = x + neighborOffsets[face].x;
                     int ny = y + neighborOffsets[face].y;
@@ -154,18 +145,32 @@ void Chunk::generateDirtyMesh() {
                     bool outOfBounds = (nx < 0 || ny < 0 || nz < 0 ||
                                         nx >= kChunkWidth || ny >= kChunkHeight || nz >= kChunkDepth);
 
-                    if (outOfBounds || getBlock(nx, ny, nz) == BlockType::Air)
-                        visibleFaces[face] = true;
-                }
+                    if (outOfBounds || getBlock(nx, ny, nz) == BlockType::Air) {
+                        std::optional<Block> b = getBlockObj(x, y, z);
+                        if (!b.has_value()) continue;
 
-                if (std::any_of(visibleFaces.begin(), visibleFaces.end(), [](bool b){ return b; })) {
-                    getBlockObj(x, y, z)->defineRenderedFaces(newPack, visibleFaces);
+                        std::vector<bool> faceFlags(6, false);
+                        faceFlags[face] = true;
+
+                        int baseIndex = facePack.vertices.size() / 5;
+                        b->defineRenderedFaces(facePack, faceFlags);
+                    }
                 }
             }
         }
     }
 
-    m_Mesh = Mesh(newPack);
+    // Merge all face packs
+    MeshPack final;
+    for (const auto& facePack : m_FaceMeshPacks) {
+        int offset = final.vertices.size() / 5;
+
+        final.vertices.insert(final.vertices.end(), facePack.vertices.begin(), facePack.vertices.end());
+        for (unsigned int idx : facePack.indices)
+            final.indices.push_back(idx + offset);
+    }
+
+    m_Mesh = Mesh(final);
     m_Mesh.setupMesh();
     m_DirtyFaces = 0;
 }

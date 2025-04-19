@@ -17,8 +17,10 @@ class World {
         static constexpr int VIEW_DISTANCE = 15; // Chunk units
     public:
         BlockType getBlockAtWorld(const glm::ivec3& worldPos) const;
+        Chunk* getChunkAtWorld(const glm::ivec3& worldPos) const;
         Chunk* getChunk(int cx, int cy, int cz);
         Player* getPlayer();
+        void queueChunkForRemeshing(const glm::ivec3& pos);
         void update(float dt);
         void draw();
 
@@ -37,10 +39,14 @@ class World {
         std::unordered_set<glm::ivec3> m_MeshQueuedChunks;
         std::unordered_map<glm::ivec3, std::unique_ptr<Chunk>> m_Chunks; // Current chunks loaded in memory
         std::vector<glm::ivec3> m_AirChunks; // List the chunks found containing only air so we don't try to re-load them
+        constexpr static float UNLOAD_INTERVAL = 0.5f; // Interval for unloading outdated chunks in the update loop
+        float m_UnloadTimer = 0.0f;
     private:
         glm::ivec3 worldToChunkCoords(const glm::vec3& position) const;
         bool isChunkInView(const glm::ivec3& playerChunk, const glm::ivec3& chunkCoords) const;
         void markChunkFaceDirty(const glm::ivec3& chunkCoord, int faceIndex);
+        void unloadOutdatedChunks(const glm::ivec3& playerChunkPos);
+        void enqueueNearbyChunks(const glm::ivec3& playerChunkPos);
 };
 
 #endif // WORLD_HPP
