@@ -36,7 +36,10 @@ class Chunk {
         void setBlock(int x, int y, int z, BlockType type);
         BlockType getBlock(int x, int y, int z) const;
         void generateMesh();
+        void generateDirtyMesh();
         void remeshFaceTowardsNeighbor(int faceIndex); 
+        void markFaceDirty(int faceIndex);
+        void markAllFacesDirty();
         void draw() const;
 
         Chunk(World* world, const glm::vec3& position, StorageMode mode = StorageMode::Dense);
@@ -51,10 +54,13 @@ class Chunk {
         StorageMode m_Mode;
         World* m_World;
         bool m_OnlyAir = true;
+        uint8_t m_DirtyFaces = 0; // 6-bit mask: 1 = dirty, 0 = clean
     private:
         std::optional<Block> getBlockObj(int x, int y, int z) const;
         void determineVisibleFacesInChunk();
         bool isBlockActive(int x, int y, int z) const; // Helper that returns whether a block at (x,y,z) is a rendered type or air
+        bool hasDirtyFaces() const;
+
         inline int index(int x, int y, int z) const {  // Helper to index into the blocks array.
             return x + kChunkWidth * (z + kChunkDepth * y); // Flatten 3D index into 1D
         }

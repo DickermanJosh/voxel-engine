@@ -47,11 +47,11 @@ void Camera::processKeyboard(bool* keys, float deltaTime) {
     }
 
     if (keys[sf::Keyboard::Space]) {
-        m_Position += m_Up * velocity;
+        m_Position += m_WorldUp * velocity;
     }
 
     if (keys[sf::Keyboard::LShift]) {
-        m_Position -= m_Up * velocity;
+        m_Position -= m_WorldUp * velocity;
     }
 
     if (keys[sf::Keyboard::LControl]) {

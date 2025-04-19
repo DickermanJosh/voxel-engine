@@ -6,12 +6,24 @@ World::World(uint64_t seed)
     : m_Seed(seed), 
     m_ChunkGenerator(this, seed),
     m_Player(glm::vec3(0.0f, 150.0f, 0.0f)) {
-    std::cout << "World init with seed: " << seed << std::endl;
-    m_LastKnownPlayerChunk = worldToChunkCoords(m_Player.getPosition());
+        std::cout << "World init with seed: " << seed << std::endl;
+        m_LastKnownPlayerChunk = worldToChunkCoords(m_Player.getPosition());
     };
 
 void World::update(float dt) {
     m_Player.update(dt);
+
+    int maxPerFrame = 4;
+    for (int i = 0; i < maxPerFrame && !m_MeshQueue.empty(); ++i) {
+        glm::ivec3 pos = m_MeshQueue.front();
+        m_MeshQueue.pop();
+        m_MeshQueuedChunks.erase(pos);
+
+        auto it = m_Chunks.find(pos);
+        if (it != m_Chunks.end()) {
+            it->second->generateDirtyMesh();
+        }
+    }
 
     glm::ivec3 playerChunk = worldToChunkCoords(m_Player.getPosition());
     bool playerChangedChunks = playerChunk != m_LastKnownPlayerChunk;
@@ -81,15 +93,19 @@ void World::update(float dt) {
     }
 
     // Process the chunk gen queue (limit per frame until thread pool is available)
-    for (int i = 0; i < 5 && !m_ChunkGenQueue.empty(); i++) {
+    for (int i = 0; i < maxPerFrame && !m_ChunkGenQueue.empty(); i++) {
         glm::ivec3 coords = m_ChunkGenQueue.front();
         m_ChunkGenQueue.pop();
         m_QueuedChunks.erase(coords);
 
-        // TODO: DEFER THIS RENDERING TO A RENDER QUEUE!!
         Chunk* c = getChunk(coords.x, coords.y, coords.z);
-        if (c) c->generateMesh();
+        // if (c) c->generateMesh();
+        if (c && m_MeshQueuedChunks.insert(coords).second) {
+            m_MeshQueue.push(coords);
+            c->markAllFacesDirty();
+        }
     }
+
 }
 
 Chunk* World::getChunk(int cx, int cy, int cz) {
@@ -135,9 +151,7 @@ Chunk* World::getChunk(int cx, int cy, int cz) {
 
         auto it = m_Chunks.find(neighborPos);
         if (it != m_Chunks.end()) {
-            // Ask neighbor to re-check the face that borders this chunk
-            int oppositeFace = face ^ 1; // flip bit 0: 0 <-> 1, 2 <-> 3, 4 <-> 5
-            it->second->remeshFaceTowardsNeighbor(oppositeFace);
+            markChunkFaceDirty(neighborPos, face ^ 1); // mark neighbor’s face that borders this chunk
         }
     }
 
@@ -152,6 +166,16 @@ glm::ivec3 World::worldToChunkCoords(const glm::vec3& position) const {
                 ));
 }
 
+void World::markChunkFaceDirty(const glm::ivec3& chunkCoord, int faceIndex) {
+    auto it = m_Chunks.find(chunkCoord);
+    if (it == m_Chunks.end()) return;
+
+    it->second->markFaceDirty(faceIndex);
+
+    if (m_MeshQueuedChunks.insert(chunkCoord).second) {
+        m_MeshQueue.push(chunkCoord);
+    }
+}
 
 void World::draw() {
     for (const auto& [coord, chunk] : m_Chunks) {

@@ -7,7 +7,7 @@
 #include <glm/glm.hpp>
 #include <unordered_map>
 
-class SparseChunkData {
+struct SparseChunkData {
     public:
         void setBlock(int x, int y, int z, BlockType type);
         BlockType getBlock(int x, int y, int z) const;

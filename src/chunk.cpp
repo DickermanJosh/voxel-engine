@@ -117,6 +117,59 @@ void Chunk::remeshFaceTowardsNeighbor(int faceIndex) {
     generateMesh();
 }
 
+void Chunk::markFaceDirty(int faceIndex) {
+    m_DirtyFaces |= (1 << faceIndex);
+}
+
+void Chunk::markAllFacesDirty() {
+    m_DirtyFaces = 0b111111;
+}
+
+bool Chunk::hasDirtyFaces() const {
+    return m_DirtyFaces != 0;
+}
+
+void Chunk::generateDirtyMesh() {
+    if (m_DirtyFaces == 0) return;
+
+    MeshPack newPack;
+
+    // Generate mesh only for dirty faces
+    for (int y = 0; y < kChunkHeight; y++) {
+        for (int z = 0; z < kChunkDepth; z++) {
+            for (int x = 0; x < kChunkWidth; x++) {
+                BlockType block = getBlock(x, y, z);
+                if (block == BlockType::Air) continue;
+
+                std::vector<bool> visibleFaces(6, false);
+
+                for (int face = 0; face < 6; ++face) {
+                    if (!(m_DirtyFaces & (1 << face)))
+                        continue; // skip clean face
+
+                    int nx = x + neighborOffsets[face].x;
+                    int ny = y + neighborOffsets[face].y;
+                    int nz = z + neighborOffsets[face].z;
+
+                    bool outOfBounds = (nx < 0 || ny < 0 || nz < 0 ||
+                                        nx >= kChunkWidth || ny >= kChunkHeight || nz >= kChunkDepth);
+
+                    if (outOfBounds || getBlock(nx, ny, nz) == BlockType::Air)
+                        visibleFaces[face] = true;
+                }
+
+                if (std::any_of(visibleFaces.begin(), visibleFaces.end(), [](bool b){ return b; })) {
+                    getBlockObj(x, y, z)->defineRenderedFaces(newPack, visibleFaces);
+                }
+            }
+        }
+    }
+
+    m_Mesh = Mesh(newPack);
+    m_Mesh.setupMesh();
+    m_DirtyFaces = 0;
+}
+
 void Chunk::draw() const {
     m_Mesh.draw();
 }

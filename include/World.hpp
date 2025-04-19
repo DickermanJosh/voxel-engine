@@ -27,17 +27,20 @@ class World {
     private:
         uint64_t m_Seed;
         ChunkGenerator m_ChunkGenerator;
-        std::queue<glm::ivec3> m_ChunkGenQueue;
-        std::unordered_set<glm::ivec3> m_QueuedChunks;
-        std::queue<glm::ivec3> m_ChunkMeshGenerationQueue;
-        std::unordered_set<glm::ivec3> m_QueuedMeshGenChunks;
-        std::unordered_map<glm::ivec3, std::unique_ptr<Chunk>> m_Chunks; // Current chunks loaded in memory
-        std::vector<glm::ivec3> m_AirChunks; // List the chunks found containing only air so we don't try to re-load them
         Player m_Player;
         glm::ivec3 m_LastKnownPlayerChunk;
+        std::queue<glm::ivec3> m_ChunkGenQueue;
+        std::queue<glm::ivec3> m_ChunkMeshGenerationQueue;
+        std::queue<glm::ivec3> m_MeshQueue;
+        std::unordered_set<glm::ivec3> m_QueuedChunks;
+        std::unordered_set<glm::ivec3> m_QueuedMeshGenChunks;
+        std::unordered_set<glm::ivec3> m_MeshQueuedChunks;
+        std::unordered_map<glm::ivec3, std::unique_ptr<Chunk>> m_Chunks; // Current chunks loaded in memory
+        std::vector<glm::ivec3> m_AirChunks; // List the chunks found containing only air so we don't try to re-load them
     private:
         glm::ivec3 worldToChunkCoords(const glm::vec3& position) const;
         bool isChunkInView(const glm::ivec3& playerChunk, const glm::ivec3& chunkCoords) const;
+        void markChunkFaceDirty(const glm::ivec3& chunkCoord, int faceIndex);
 };
 
 #endif // WORLD_HPP
