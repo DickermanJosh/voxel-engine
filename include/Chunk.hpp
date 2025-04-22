@@ -43,14 +43,13 @@ class Chunk {
         void draw() const;
 
         Chunk(World* world, const glm::vec3& position, StorageMode mode = StorageMode::Dense);
-
+        ~Chunk();
     private:
-        glm::vec3 m_Position;
+        glm::vec3 m_Position; // World pos
         std::vector<BlockType> m_Blocks;
         std::vector<std::optional<Block>> m_BlockObjs;
         std::unique_ptr<SparseChunkData> m_Sparse;
-        Mesh m_Mesh;
-        std::array<MeshPack, 6> m_FaceMeshPacks;
+        std::unique_ptr<Mesh> m_Mesh;
         StorageMode m_Mode;
         World* m_World;
         bool m_OnlyAir = true;

@@ -5,7 +5,7 @@ Mesh::Mesh(const MeshPack& pack)
         if (pack.vertices.size() == 0 || pack.indices.size() == 0) {
             return;
         }
-        setupMesh();
+        // setupMesh();
 }
 
 Mesh::~Mesh() {

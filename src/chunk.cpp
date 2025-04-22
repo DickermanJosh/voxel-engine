@@ -1,20 +1,27 @@
 #include "Chunk.hpp"
 #include "World.hpp"
+#include <iostream>
 
 Chunk::Chunk(World* world, const glm::vec3& pos, StorageMode mode)
     : m_World(world),
     m_Position(pos),
     m_Blocks((kChunkWidth * kChunkHeight * kChunkDepth), BlockType::Air), // default everything to BlockType::Air
     m_BlockObjs((kChunkWidth * kChunkHeight * kChunkDepth)), // default everything with std::optional
-    m_Mesh({}), 
     m_Mode(mode) {
-        // std::cout << "Creating chunk @ pos: " << pos.x << ", " << pos.y << "," << pos.z << std::endl;
+        std::cout << "Creating chunk @ pos: " << pos.x << ", " << pos.y << "," << pos.z << std::endl;
         if (m_Mode == StorageMode::Dense) {
             m_Blocks.resize(kChunkDepth * kChunkDepth * kChunkHeight, BlockType::Air);
         } else {
             m_Sparse = std::make_unique<SparseChunkData>();
         }
     }
+
+Chunk::~Chunk() {
+    m_Blocks.clear();
+    m_BlockObjs.clear();
+    m_Sparse.reset();
+    m_Mesh.reset();
+}
 
 void Chunk::setBlock(int x, int y, int z, BlockType type) {
     if (m_Mode == StorageMode::Dense) {
@@ -38,10 +45,17 @@ void Chunk::generateMesh() {
     if (m_OnlyAir) return;
 
     // Clear all face mesh packs
-    for (auto& facePack : m_FaceMeshPacks) {
+    /*for (auto& facePack : m_FaceMeshPacks) {
         facePack.vertices.clear();
         facePack.indices.clear();
-    }
+    }*/
+
+    m_Mesh.reset();
+
+    MeshPack pack;
+
+    pack.vertices.reserve(kChunkWidth * kChunkHeight * kChunkDepth * 6 * 4 * 5); // Rough upper bound
+    pack.indices.reserve(kChunkWidth * kChunkHeight * kChunkDepth * 6 * 6);
 
     for (int y = 0; y < kChunkHeight; ++y) {
         for (int z = 0; z < kChunkDepth; ++z) {
@@ -52,6 +66,7 @@ void Chunk::generateMesh() {
                 std::optional<Block> b = getBlockObj(x, y, z);
                 if (!b.has_value()) continue;
 
+                std::vector<bool> visible(6, false);
                 for (int face = 0; face < 6; ++face) {
                     int nx = x + neighborOffsets[face].x;
                     int ny = y + neighborOffsets[face].y;
@@ -62,28 +77,59 @@ void Chunk::generateMesh() {
 
                     bool faceVisible = false;
 
+                    // Neighboring block belongs to another chunk
                     if (!neighborInRange) {
-                        glm::ivec3 worldPos = glm::ivec3(m_Position) + glm::ivec3(x, y, z) + neighborOffsets[face];
-                        Chunk* nChunk = m_World->getChunkAtWorld(worldPos);
-                        faceVisible = (nChunk == nullptr || m_World->getBlockAtWorld(worldPos) == BlockType::Air);
+                        glm::ivec3 worldPos(
+                                static_cast<int>(m_Position.x) + x + neighborOffsets[face].x,
+                                static_cast<int>(m_Position.y) + y + neighborOffsets[face].y,
+                                static_cast<int>(m_Position.z) + z + neighborOffsets[face].z
+                                );
+
+                        BlockType neighbor = m_World->getBlockAtWorld(worldPos);
+
+                        if (neighbor == BlockType::Air) {
+                            faceVisible = true;
+                        }
                     } else {
                         faceVisible = (getBlock(nx, ny, nz) == BlockType::Air);
                     }
+                    /*if (!neighborInRange) {
+                        glm::ivec3 neighborChunkPos = glm::ivec3(m_Position) + neighborOffsets[face];
+                        // glm::ivec3 chunkPos = glm::floor(m_Position / glm::vec3(kChunkWidth, kChunkHeight, kChunkDepth));
+                        // glm::ivec3 neighborChunkPos = chunkPos + neighborOffsets[face];
+                        Chunk* nChunk = m_World->getChunkAtChunkPos(neighborChunkPos);
 
-                    if (faceVisible) {
-                        std::vector<bool> visible(6, false);
+                        if (nChunk == nullptr) {
+                            faceVisible = true;
+                        } else {
+                            int localX = (x + neighborOffsets[face].x + kChunkWidth) % kChunkWidth;
+                            if (localX < 0) localX += kChunkWidth;
+                            int localY = (y + neighborOffsets[face].y + kChunkHeight) % kChunkHeight;
+                            if (localY < 0) localX += kChunkHeight;
+                            int localZ = (z + neighborOffsets[face].z + kChunkDepth) % kChunkDepth;
+                            if (localZ < 0) localX += kChunkDepth;
+
+                            faceVisible = nChunk->getBlock(localX, localY, localZ) == BlockType::Air;
+                        }
+                    } else {
+                        faceVisible = getBlock(nx, ny, nz) == BlockType::Air;
+                    }*/
+
+                    visible[face] = faceVisible;
+                    /*if (faceVisible) {
                         visible[face] = true;
 
                         int baseIndex = m_FaceMeshPacks[face].vertices.size() / 5;
                         b->defineRenderedFaces(m_FaceMeshPacks[face], visible);
-                    }
+                    }*/
                 }
+                b->defineRenderedFaces(pack, visible);
             }
         }
     }
 
     // Merge all face packs into the final mesh
-    MeshPack combined;
+    /*MeshPack combined;
     for (const auto& facePack : m_FaceMeshPacks) {
         int indexOffset = combined.vertices.size() / 5;
         combined.vertices.insert(combined.vertices.end(), facePack.vertices.begin(), facePack.vertices.end());
@@ -91,10 +137,10 @@ void Chunk::generateMesh() {
         for (unsigned int idx : facePack.indices) {
             combined.indices.push_back(idx + indexOffset);
         }
-    }
+    }*/
 
-    m_Mesh = Mesh(combined);
-    m_Mesh.setupMesh();
+    m_Mesh = std::make_unique<Mesh>(pack);
+    m_Mesh->setupMesh();
     m_DirtyFaces = 0;
 }
 
@@ -121,14 +167,19 @@ bool Chunk::hasDirtyFaces() const {
     return m_DirtyFaces != 0;
 }
 
+// TODO figure out wtf is wrong withthis 
 void Chunk::generateDirtyMesh() {
+    m_DirtyFaces = 0;
+    generateMesh();
+    return;
 for (int face = 0; face < 6; ++face) {
+        // If the current face is not marked as dirty leave it alone
         if (!(m_DirtyFaces & (1 << face)))
             continue;
 
-        MeshPack& facePack = m_FaceMeshPacks[face];
-        facePack.vertices.clear();
-        facePack.indices.clear();
+        // MeshPack& facePack = m_FaceMeshPacks[face];
+        // facePack.vertices.clear();
+        // facePack.indices.clear();
 
         int faceVertexCount = 0;
 
@@ -152,8 +203,8 @@ for (int face = 0; face < 6; ++face) {
                         std::vector<bool> faceFlags(6, false);
                         faceFlags[face] = true;
 
-                        int baseIndex = facePack.vertices.size() / 5;
-                        b->defineRenderedFaces(facePack, faceFlags);
+                        // int baseIndex = facePack.vertices.size() / 5;
+                        // b->defineRenderedFaces(m_FaceMeshPacks, faceFlags);
                     }
                 }
             }
@@ -162,21 +213,22 @@ for (int face = 0; face < 6; ++face) {
 
     // Merge all face packs
     MeshPack final;
-    for (const auto& facePack : m_FaceMeshPacks) {
+    /*for (const auto& facePack : m_FaceMeshPacks) {
         int offset = final.vertices.size() / 5;
 
         final.vertices.insert(final.vertices.end(), facePack.vertices.begin(), facePack.vertices.end());
         for (unsigned int idx : facePack.indices)
             final.indices.push_back(idx + offset);
-    }
+    }*/
 
-    m_Mesh = Mesh(final);
-    m_Mesh.setupMesh();
+    m_Mesh = std::make_unique<Mesh>(final);
+    m_Mesh->setupMesh();
     m_DirtyFaces = 0;
 }
 
 void Chunk::draw() const {
-    m_Mesh.draw();
+    if (!m_Mesh) return;
+    m_Mesh->draw();
 }
 
 BlockType Chunk::getBlock(int x, int y, int z) const {
