@@ -13,6 +13,7 @@ World::World(uint64_t seed)
     };
 
 
+
 int maxPerFrame = 4;
 void World::update(float dt) {
     m_UnloadTimer += dt;
@@ -27,6 +28,7 @@ void World::update(float dt) {
         m_LastKnownPlayerChunk = worldToChunkCoords(m_Player.getPosition());
         ThreadPool::instance().enqueue([this, playerChunk]() {
             enqueueNearbyChunks(playerChunk);
+            sortMeshingQueue(playerChunk);
         });
     }
 
@@ -137,6 +139,30 @@ void World::enqueueNearbyChunks(const glm::ivec3& playerChunkPos) {
 
     filteredList.clear();
     m_ChunkGenQueue = std::move(filteredQueue);
+}
+
+void World::sortMeshingQueue(const glm::ivec3& playerChunkPos) {
+    std::queue<glm::ivec3> filteredQueue;
+    std::vector<glm::ivec3> filteredList;
+    std::scoped_lock<std::mutex> lock(m_MeshQueueMutex);
+
+    while (!m_MeshQueue.empty()) {
+        glm::ivec3 pos = m_MeshQueue.front();
+        m_MeshQueue.pop();
+        filteredList.push_back(pos);
+    }
+
+    std::sort(filteredList.begin(), filteredList.end(), [&](const glm::ivec3& a, const glm::ivec3& b) {
+            return manhattanDistSq(a, playerChunkPos) < manhattanDistSq(b, playerChunkPos);
+            });
+
+    for (size_t i = 0; i < filteredList.size(); i++) {
+        filteredQueue.push(filteredList[i]);
+    }
+
+    filteredList.clear();
+    m_MeshQueue = std::move(filteredQueue);
+
 }
 
 Chunk* World::getChunk(int cx, int cy, int cz) {

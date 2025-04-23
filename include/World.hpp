@@ -62,6 +62,7 @@ class World {
         void markChunkFaceDirty(const glm::ivec3& chunkCoord, int faceIndex);
         void unloadOutdatedChunks(const glm::ivec3& playerChunkPos);
         void enqueueNearbyChunks(const glm::ivec3& playerChunkPos);
+        void sortMeshingQueue(const glm::ivec3& playerChunkPos);
 };
 
 #endif // WORLD_HPP
