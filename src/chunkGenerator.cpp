@@ -28,23 +28,23 @@ std::unique_ptr<Chunk> ChunkGenerator::populateChunk(int cx, int cy, int cz)
     float worldOffsetZ = cz * Chunk::kChunkDepth;
 
     // Iterate through each block in the chunk and store its info based on noise maps
-    for (int z = 0; z < Chunk::kChunkDepth; ++z) {
-        float worldZ = worldOffsetZ + z;
-        for (int x = 0; x < Chunk::kChunkWidth; ++x) {
-            float worldX = worldOffsetX + x;
+    for (int z = 0; z < Chunk::kChunkDepth; z++) {
+        int worldZ = worldOffsetZ + z;
+        for (int x = 0; x < Chunk::kChunkWidth; x++) {
+            int worldX = worldOffsetX + x;
 
             int terrainHeight = getHeight(worldX, worldZ);
 
-            for (int y = 0; y < Chunk::kChunkHeight; ++y) {
-                float worldY = worldOffsetY + y;
+            for (int y = 0; y < Chunk::kChunkHeight; y++) {
+                int worldY = worldOffsetY + y;
                 BlockType type = BlockType::Air;
 
-                if (worldY < terrainHeight - 4)
+                if (worldY < terrainHeight)
                     type = BlockType::Stone;
-                else if (worldY < terrainHeight - 1)
+                /*else if (worldY < terrainHeight - 1)
                     type = BlockType::Dirt;
                 else if (std::abs(worldY - terrainHeight) < 0.1f)
-                    type = BlockType::Grass;
+                    type = BlockType::Grass;*/
 
                 if (type != BlockType::Air) {
                     placedBlocks.push_back({x, y, z, type});
@@ -98,23 +98,29 @@ void ChunkGenerator::setBlockAtChunkPos(std::unique_ptr<Chunk>& chunk,
 }
 
 bool ChunkGenerator::isChunkEmpty(int cx, int cy, int cz) const {
-    float worldOffsetX = cx * Chunk::kChunkWidth;
-    float worldOffsetY = cy * Chunk::kChunkHeight;
-    float worldOffsetZ = cz * Chunk::kChunkDepth;
+    int worldOffsetX = cx * Chunk::kChunkWidth;
+    int worldOffsetY = cy * Chunk::kChunkHeight;
+    int worldOffsetZ = cz * Chunk::kChunkDepth;
 
-    for (int z = 0; z < Chunk::kChunkDepth; ++z) {
-        float worldZ = worldOffsetZ + z;
-        for (int x = 0; x < Chunk::kChunkWidth; ++x) {
-            float worldX = worldOffsetX + x;
+    for (int z = 0; z < Chunk::kChunkDepth; z++) {
+        int worldZ = worldOffsetZ + z;
+        for (int x = 0; x < Chunk::kChunkWidth; x++) {
+            int worldX = worldOffsetX + x;
 
             int terrainHeight = getHeight(worldX, worldZ);
 
-            float maxBlockY = worldOffsetY + Chunk::kChunkHeight;
+            // int maxBlockY = worldOffsetY + Chunk::kChunkHeight;
+            for (int y = 0; y < Chunk::kChunkHeight; y++) {
+                int worldY = worldOffsetY + y;
 
-            // If this chunk is at or below terrainHeight, it's not all air
-            if (maxBlockY > terrainHeight - 4) {
-                return false;
+                if (worldY < terrainHeight) {
+                    return false;
+                }
             }
+            // If this chunk is at or below terrainHeight, it's not all air
+            /*if (maxBlockY > terrainHeight - 4) {
+                return false;
+            }*/
         }
     }
 

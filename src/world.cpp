@@ -6,14 +6,14 @@
 World::World(uint64_t seed) 
     : m_Seed(seed), 
     m_ChunkGenerator(this, seed),
-    m_Player(glm::vec3(0.0f, 150.0f, 0.0f)) {
+    m_Player(glm::vec3(0.0f, 150.0f, 0.0f)),
+    m_LastKnownPlayerChunk(worldToChunkCoords(m_Player.getPosition())) { 
         std::cout << "World init with seed: " << seed << std::endl;
-        m_LastKnownPlayerChunk = worldToChunkCoords(m_Player.getPosition());
         enqueueNearbyChunks(m_LastKnownPlayerChunk);
     };
 
 
-int maxPerFrame = 2;
+int maxPerFrame = 4;
 void World::update(float dt) {
     m_UnloadTimer += dt;
     m_Player.update(dt);
@@ -24,7 +24,7 @@ void World::update(float dt) {
     unloadOutdatedChunks(playerChunk);
 
     if (playerChangedChunks) {
-        m_LastKnownPlayerChunk = playerChunk;
+        m_LastKnownPlayerChunk = worldToChunkCoords(m_Player.getPosition());
         ThreadPool::instance().enqueue([this, playerChunk]() {
             enqueueNearbyChunks(playerChunk);
         });
@@ -59,19 +59,19 @@ void World::update(float dt) {
         }
 
         Chunk* c = getChunkAtChunkPos(pos);
-        if (c) {
-            c->generateMesh();
+        if (!c) continue;
 
-            // Regenerate neighbor meshes (if not queued already)
-            for (int f = 0; f < 6; f++) {
-                glm::ivec3 neighborPos = pos + Chunk::neighborOffsets[f];
-                if (m_MeshQueuedChunks.find(neighborPos) == m_MeshQueuedChunks.end()) {
-                    Chunk* n = getChunkAtChunkPos(neighborPos);
-                    if (n) {
-                        std::lock_guard<std::mutex> lock(m_MeshQueueMutex);
-                        if (m_MeshQueuedChunks.insert(neighborPos).second)
-                            m_MeshQueue.push(neighborPos);
-                    }
+        c->generateMesh();
+
+        // Regenerate neighbor meshes (if not queued already)
+        for (int f = 0; f < 6; f++) {
+            glm::ivec3 neighborPos = pos + Chunk::neighborOffsets[f];
+            if (m_MeshQueuedChunks.find(neighborPos) == m_MeshQueuedChunks.end()) {
+                Chunk* n = getChunkAtChunkPos(neighborPos);
+                if (!n) continue;
+                std::lock_guard<std::mutex> lock(m_MeshQueueMutex);
+                if (m_MeshQueuedChunks.insert(neighborPos).second) {
+                    m_MeshQueue.push(neighborPos);
                 }
             }
         }
@@ -100,15 +100,10 @@ void World::enqueueNearbyChunks(const glm::ivec3& playerChunkPos) {
         }
     }
 
-    auto manhattanDistSq = [](const glm::ivec3& a, const glm::ivec3& b) {
-        glm::ivec3 d = a - b;
-        return d.x * d.x + d.y * d.y + d.z * d.z;
-    };
-
     // Sort the visible chunks by their distance to the player. Closer chunks first
-    std::sort(candidates.begin(), candidates.end(), [&](const glm::ivec3& a, const glm::ivec3& b) {
+    /*std::sort(candidates.begin(), candidates.end(), [&](const glm::ivec3& a, const glm::ivec3& b) {
             return manhattanDistSq(a, playerChunkPos) < manhattanDistSq(b, playerChunkPos);
-            });
+            });*/
 
    std::scoped_lock lock(m_ChunkMutex, m_ChunkGenQueueMutex);
     for (const auto& pos : candidates) {
@@ -120,16 +115,27 @@ void World::enqueueNearbyChunks(const glm::ivec3& playerChunkPos) {
     }
 
     std::queue<glm::ivec3> filteredQueue;
+    std::vector<glm::ivec3> filteredList;
     while (!m_ChunkGenQueue.empty()) {
         glm::ivec3 pos = m_ChunkGenQueue.front();
         m_ChunkGenQueue.pop();
         if (visibleNow.count(pos)) {
-            filteredQueue.push(pos);
+            // filteredQueue.push(pos);
+            filteredList.push_back(pos);
         } else {
             m_QueuedChunks.erase(pos);
         }
     }
 
+    std::sort(filteredList.begin(), filteredList.end(), [&](const glm::ivec3& a, const glm::ivec3& b) {
+            return manhattanDistSq(a, playerChunkPos) < manhattanDistSq(b, playerChunkPos);
+            });
+
+    for (size_t i = 0; i < filteredList.size(); i++) {
+        filteredQueue.push(filteredList[i]);
+    }
+
+    filteredList.clear();
     m_ChunkGenQueue = std::move(filteredQueue);
 }
 

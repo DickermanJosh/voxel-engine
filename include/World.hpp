@@ -1,10 +1,11 @@
 #ifndef WORLD_HPP
 #define WORLD_HPP
 
-#include "Chunk.hpp"
 #include "ChunkGenerator.hpp"
 #include "HashUtils.hpp"
 #include "Player.hpp"
+#include "Chunk.hpp"
+#include "Utils.hpp"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -41,8 +42,8 @@ class World {
         ChunkGenerator m_ChunkGenerator;
         Player m_Player;
         glm::ivec3 m_LastKnownPlayerChunk;
-
         std::queue<glm::ivec3> m_ChunkGenQueue; // chunk generation queue
+        // std::priority_queue<glm::ivec3, std::vector<glm::ivec3>, ChunkDistanceComparator> m_ChunkGenQueue;
         mutable std::mutex m_ChunkGenQueueMutex;
         std::unordered_set<glm::ivec3> m_QueuedChunks; // prevent duplicates in the generation queue
 

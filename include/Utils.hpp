@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 #include "stb_image.h"
 
 GLuint loadTexture(const char *path);
@@ -29,5 +30,10 @@ inline uint64_t generate_uint64_t() {
     std::uniform_int_distribution<uint64_t> distrib(0, std::numeric_limits<uint64_t>::max());
     return distrib(gen);
 }
+
+inline auto manhattanDistSq = [](const glm::ivec3& a, const glm::ivec3& b) {
+    glm::ivec3 d = a - b;
+    return d.x * d.x + d.y * d.y + d.z * d.z;
+};
 
 #endif // UTILS_HPP

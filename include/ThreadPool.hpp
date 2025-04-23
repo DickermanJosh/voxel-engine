@@ -46,7 +46,7 @@ private:
     // // Constructor to creates a thread pool with given
     // number of threads
     inline ThreadPool(size_t num_threads
-               = thread::hardware_concurrency())
+               = thread::hardware_concurrency() / 2)
     {
 
         // Creating worker threads
@@ -109,22 +109,4 @@ private:
     ThreadPool& operator=(const ThreadPool&) = delete;
 };
 
-/*int main()
-{
-    // Create a thread pool with 4 threads
-    ThreadPool pool(4);
-
-    // Enqueue tasks for execution
-    for (int i = 0; i < 5; ++i) {
-        pool.enqueue([i] {
-            cout << "Task " << i << " is running on thread "
-                 << this_thread::get_id() << endl;
-            // Simulate some work
-            this_thread::sleep_for(
-                chrono::milliseconds(100));
-        });
-    }
-
-    return 0;
-}*/
 #endif
